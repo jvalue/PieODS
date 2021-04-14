@@ -334,13 +334,26 @@ class DatasourceAPI():
             "datasources":"datasources",
             # "trigger":"datasources/{}/trigger", #datasource id goes in here
             # "imports":"datasources/{}/imports", #datasource id goes in here
-            # "latest_Dataimport":"datasources/{}/imports/latest", #datasource id goes in here
-            # "lataest_Dataimport":"datasources/{}/imports/{}/data", #datasource id then Dataimport id
-            # "lataest_Dataimport":"datasources/{}/imports/latest", #datasource id goes in here
+            # "latest_DataImport":"datasources/{}/imports/latest", #datasource id goes in here
+            # "lataest_DataImport":"datasources/{}/imports/{}/data", #datasource id then Dataimport id
+            # "lataest_DataImport":"datasources/{}/imports/latest", #datasource id goes in here
            
             }
     def get_all_DatasourceConfigs(self):
-        return requests.get(_url(self.BASE_URL, self.relative_paths["protocols"]))
+      """Gets all DatasourceConfigs.
+      Examples of a DatasourceConfig is:
+        {
+        "id": Number,
+        "protocol": ProtocolConfig,
+        "format": FormatConfig,
+        "trigger": TriggerConfig,
+        "metadata": Metadata
+        }
+
+      :return: DatasourceConfigs
+      :rtype: json
+      """
+      return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"]))
        
         
 
