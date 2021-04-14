@@ -330,7 +330,7 @@ class DatasourceAPI():
         self.BASE_URL = "http://localhost:9000/api/adapter"
 
 
-        self.relative_paths = {
+        self.relative_paths = { 
             "datasources":"datasources",
             # "trigger":"datasources/{}/trigger", #datasource id goes in here
             # "imports":"datasources/{}/imports", #datasource id goes in here
