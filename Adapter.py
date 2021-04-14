@@ -339,7 +339,9 @@ class DatasourceAPI():
             # "lataest_Dataimport":"datasources/{}/imports/latest", #datasource id goes in here
            
             }
-    def 
+    def get_all_DatasourceConfigs(self):
+        return requests.get(_url(self.BASE_URL, self.relative_paths["protocols"]))
+       
         
 
 #x = DatasourceAPI()
