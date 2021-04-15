@@ -6,8 +6,8 @@ PieODS
 .. image:: https://img.shields.io/pypi/v/PieODS.svg
         :target: https://pypi.python.org/pypi/PieODS
 
-.. image:: https://img.shields.io/travis/Shady-Hegazy/PieODS.svg
-        :target: https://travis-ci.com/Shady-Hegazy/PieODS.svg?token=ZPj7guhr5s5UpfwurzhD&branch=main
+.. image:: https://travis-ci.com/Shady-Hegazy/PieODS.svg?token=ZPj7guhr5s5UpfwurzhD&branch=main
+        :target: https://travis-ci.com/Shady-Hegazy/PieODS
 
 .. image:: https://readthedocs.org/projects/PieODS/badge/?version=latest
         :target: https://PieODS.readthedocs.io/en/latest/?badge=latest
