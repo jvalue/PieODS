@@ -212,103 +212,97 @@ from helpers import _url
 
 #thinking about doing OOP version, might be easier to distinguish concepts like adapter and datasource that are in the same file
 #should be imported from a configs or main file
-BASE_URL = "http://localhost:9000/api/pipelines"
-
-relative_paths = {
-    "version":"version",
-    "job":"job",
-    "trigger":"trigger",
-    "configs":"configs",
-}
-
-
-# def _url(r, *path_components):
-#     """
-#     .. warning:: Don't do this, it will break your system!
-#     """
-#     for c in path_components:
-#         r += "/{}".format(str(c)) 
-#     return r
+class PipelineAPI:
+  def __init__(self) -> None:
     
-def get_health_status():
-    return requests.get(BASE_URL) 
+    self.BASE_URL = "http://localhost:9000/api/pipelines"
 
-def get_service_version():
-    return requests.get(_url(BASE_URL, relative_paths["version"]))
+    self.relative_paths = {
+        "version":"version",
+        "job":"job",
+        "trigger":"trigger",
+        "configs":"configs",
+    }
 
-#assuming body is always json
-def execute_pipeline(PipelineExecutionRequest):
-    """Executes the pipeline
+  def get_health_status(self):
+      return requests.get(self.BASE_URL) 
 
-    Parameters
-    ----------
-    PipelineExecutionRequest : json
-        Format:
-            {
-            "data": object,
-            "func": string (VALID JS CODE)
-            }
+  def get_service_version(self):
+      return requests.get(_url(self.BASE_URL, self.relative_paths["version"]))
 
-    Returns
-    -------
-    Response object: 
-    -------
-        "JobResult" is the response body and has the format:
-            {
-            "data"?: object,
-            "error"?: object,
-            "stats": stats
-            }
-    """
-    return requests.post(_url(BASE_URL, relative_paths["job"]), json=PipelineExecutionRequest)
+  #assuming body is always json
+  def execute_pipeline(self, PipelineExecutionRequest):
+      """Executes the pipeline
 
-def trigger_pipeline(PipelineConfigTriggerRequest):
-    """Triggers the pipeline
+      Parameters
+      ----------
+      PipelineExecutionRequest : json
+          Format:
+              {
+              "data": object,
+              "func": string (VALID JS CODE)
+              }
 
-    Parameters
-    ----------
-    PipelineConfigTriggerRequest: json
-    """
-    return requests.post(_url(BASE_URL, relative_paths["trigger"]), json=PipelineConfigTriggerRequest)
+      Returns
+      -------
+      Response object: 
+      -------
+          "JobResult" is the response body and has the format:
+              {
+              "data"?: object,
+              "error"?: object,
+              "stats": stats
+              }
+      """
+      return requests.post(_url(self.BASE_URL, self.relative_paths["job"]), json=PipelineExecutionRequest)
 
-def get_all_pipeline_configs(PipelineConfigTriggerRequest):
-    return requests.get(_url(BASE_URL, relative_paths["configs"]))
+  def trigger_pipeline(self, PipelineConfigTriggerRequest):
+      """Triggers the pipeline
 
-def get_pipeline_config_by_ID(PipelineID):
-    """
-    Parameters
-    ----------
-    PipelineID: int
-    """
-    return requests.get(_url(BASE_URL, relative_paths["configs"], PipelineID))
+      Parameters
+      ----------
+      PipelineConfigTriggerRequest: json
+      """
+      return requests.post(_url(self.BASE_URL, self.relative_paths["trigger"]), json=PipelineConfigTriggerRequest)
 
-def create_pipeline_config(PipelineconfigDTO):
-  """Create a pipeline config
+  def get_all_pipeline_configs(self, PipelineConfigTriggerRequest):
+      return requests.get(_url(self.BASE_URL, self.relative_paths["configs"]))
 
-  :param PipelineconfigDTO: identifier of a pipeline config
-  :type PipelineconfigDTO: json
-  :return: [description]
-  :rtype: [type]
-  """  ""
-  return requests.post(_url(BASE_URL, relative_paths["configs"]), json=PipelineconfigDTO)
+  def get_pipeline_config_by_ID(self, PipelineID):
+      """
+      Parameters
+      ----------
+      PipelineID: int
+      """
+      return requests.get(_url(self.BASE_URL, self.relative_paths["configs"], PipelineID))
 
-def update_pipeline_config(PipelineID, PipelineconfigDTO):
-  """Update a pipeline config.
+  def create_pipeline_config(self, PipelineconfigDTO):
+    """Create a pipeline config
 
-  :param PipelineconfigDTO: [description]
-  :type PipelineconfigDTO: [type]
-  :return: [description]
-  :rtype: [type]
-  """  ""
-  return requests.put(_url(BASE_URL, relative_paths["configs"], PipelineID), json=PipelineconfigDTO)
+    :param PipelineconfigDTO: identifier of a pipeline config
+    :type PipelineconfigDTO: json
+    :return: [description]
+    :rtype: [type]
+    """  ""
+    return requests.post(_url(self.BASE_URL, self.relative_paths["configs"]), json=PipelineconfigDTO)
 
-def delete_all_pipeline_configs():
-    return requests.delete(_url(BASE_URL, relative_paths["configs"]))
+  def update_pipeline_config(self, PipelineID, PipelineconfigDTO):
+    """Update a pipeline config.
 
-def get_pipeline_config_by_ID(PipelineID):
-    """
-    Parameters
-    ----------
-    PipelineID: int
-    """
-    return requests.delete(_url(BASE_URL, relative_paths["configs"], PipelineID))
+    :param PipelineconfigDTO: [description]
+    :type PipelineconfigDTO: [type]
+    :return: [description]
+    :rtype: [type]
+    """  ""
+    return requests.put(_url(self.BASE_URL, self.relative_paths["configs"], PipelineID), json=PipelineconfigDTO)
+
+  def delete_all_pipeline_configs(self):
+      return requests.delete(_url(self.BASE_URL, self.relative_paths["configs"]))
+
+  def get_pipeline_config_by_ID(self, PipelineID):
+      """
+      Parameters
+      ----------
+      PipelineID: int
+      """
+      return requests.delete(_url(self.BASE_URL, self.relative_paths["configs"], PipelineID))

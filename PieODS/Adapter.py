@@ -326,35 +326,47 @@ class AdapterAPI():
 #Datasource API
 #As it has the same self.BASE_URL, I put it in the  same file.
 class DatasourceAPI():
-    def __init__(self) -> None:
-        self.BASE_URL = "http://localhost:9000/api/adapter"
+  def __init__(self) -> None:
+      self.BASE_URL = "http://localhost:9000/api/adapter"
 
 
-        self.relative_paths = { 
-            "datasources":"datasources",
-            # "trigger":"datasources/{}/trigger", #datasource id goes in here
-            # "imports":"datasources/{}/imports", #datasource id goes in here
-            # "latest_DataImport":"datasources/{}/imports/latest", #datasource id goes in here
-            # "lataest_DataImport":"datasources/{}/imports/{}/data", #datasource id then Dataimport id
-            # "lataest_DataImport":"datasources/{}/imports/latest", #datasource id goes in here
-           
-            }
-    def get_all_DatasourceConfigs(self):
-      """Gets all DatasourceConfigs.
-      Examples of a DatasourceConfig is:
-        {
-        "id": Number,
-        "protocol": ProtocolConfig,
-        "format": FormatConfig,
-        "trigger": TriggerConfig,
-        "metadata": Metadata
-        }
+      self.relative_paths = { 
+          "datasources":"datasources",
+          # "trigger":"datasources/{}/trigger", #datasource id goes in here
+          # "imports":"datasources/{}/imports", #datasource id goes in here
+          # "latest_DataImport":"datasources/{}/imports/latest", #datasource id goes in here
+          # "lataest_DataImport":"datasources/{}/imports/{}/data", #datasource id then Dataimport id
+          # "lataest_DataImport":"datasources/{}/imports/latest", #datasource id goes in here
+          
+          }
+  def get_all_DatasourceConfigs(self):
+    """Gets all DatasourceConfigs.
+    Examples of a DatasourceConfig is:
+      {
+      "id": Number,
+      "protocol": ProtocolConfig,
+      "format": FormatConfig,
+      "trigger": TriggerConfig,
+      "metadata": Metadata
+      }
 
-      :return: DatasourceConfigs
-      :rtype: json
-      """
-      return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"]))
+    :return: DatasourceConfigs
+    :rtype: json
+    """
+    return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"]))
        
-        
+  def get_DatasourceConfig(self, DatasourceID):
+    return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID))
 
+  def create_Datasource(self, DatasourceConfig):
+    return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"]), json=DatasourceConfig)
+
+  def update_Datasource(self, DatasourceID, DatasourceConfig):
+    return requests.put(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID), json=DatasourceConfig)
+
+  def delete_all_Datasources(self):
+    return requests.delete(_url(self.BASE_URL, self.relative_paths["datasources"]))
+  
+  def delete_all_Datasources(self, DatasourceID):
+    return requests.delete(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID))
 #x = DatasourceAPI()
