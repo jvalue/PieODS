@@ -367,6 +367,6 @@ class DatasourceAPI():
   def delete_all_Datasources(self):
     return requests.delete(_url(self.BASE_URL, self.relative_paths["datasources"]))
   
-  def delete_all_Datasources(self, DatasourceID):
+  def delete_Datasource(self, DatasourceID):
     return requests.delete(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID))
 #x = DatasourceAPI()
