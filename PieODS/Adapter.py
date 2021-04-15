@@ -369,4 +369,27 @@ class DatasourceAPI():
   
   def delete_Datasource(self, DatasourceID):
     return requests.delete(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID))
+
+  def trigger_DataImport(self, DatasourceID, Parameters):
+    return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "trigger"), json=Parameters)
+
+  def trigger_DataImport(self, DatasourceID, Parameters):
+    return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "trigger"), json=Parameters)
+
+  def get_All_Dataimports_of_Datasource(self, DatasourceID):
+    return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "imports"))
+
+  def get_Dataimport_of_Datasource(self, DatasourceID, importId):
+    return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "imports", importId))
+
+  def get_latest_Dataimport_of_Datasource(self, DatasourceID):
+    return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "imports", "latest"))
+
+  def get_Data_of_Dataimport_of_Datasource(self, DatasourceID, importId):
+    return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "imports", importId, "data"))
+
+  def get_Data_of_latest_Dataimport_of_Datasource(self, DatasourceID):
+    return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "imports", "latest", "data"))
+
+
 #x = DatasourceAPI()
