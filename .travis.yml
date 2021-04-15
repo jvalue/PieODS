@@ -22,7 +22,7 @@ deploy:
   distributions: sdist bdist_wheel
   user: Shady-Hegazy
   password:
-    secure: VWreYTtdzPw9R4h
+    secure: PLEASE_REPLACE_ME
   on:
     tags: true
     repo: Shady-Hegazy/PieODS
