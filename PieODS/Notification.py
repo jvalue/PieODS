@@ -142,3 +142,6 @@ class NotificationAPI():
 
     def delete_notificationConfig(self, NotificationConfigID):
         return requests.delete(_url(self.BASE_URL, self.relative_paths["configs"], NotificationConfigID))
+
+    def trigger_all_notifications(self, TriggerConfig):
+        return requests.put(_url(self.BASE_URL, self.relative_paths["trigger"]), json=TriggerConfig)
