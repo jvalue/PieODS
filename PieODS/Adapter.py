@@ -283,9 +283,9 @@ DataImport
     }
 
 """
-from helpers import _url
-import requests
-
+# from helpers import _url
+# import requests
+from helpers import *
 
 #Adapter API (data import)
 class AdapterAPI():

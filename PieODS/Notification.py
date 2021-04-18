@@ -103,9 +103,10 @@ Equal to `NotificationWriteModel`, but has an additional `id: number` field.
 
 """
 
-import requests
-from requests.models import requote_uri
-from helpers import _url
+#import requests
+##from requests.models import requote_uri
+#from helpers import _url
+from helpers import *
 
 class NotificationAPI():
     def __init__(self) -> None:
