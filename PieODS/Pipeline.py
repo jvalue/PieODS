@@ -209,7 +209,7 @@ PipelineConfigDTO:
 """
 # import requests
 # from helpers import _url
-from helpers import *
+from .helpers import *
 
 #thinking about doing OOP version, might be easier to distinguish concepts like adapter and datasource that are in the same file
 #should be imported from a configs or main file
@@ -266,7 +266,7 @@ class PipelineAPI:
       """
       return requests.post(_url(self.BASE_URL, self.relative_paths["trigger"]), json=PipelineConfigTriggerRequest)
 
-  def get_all_pipeline_configs(self, PipelineConfigTriggerRequest):
+  def get_all_pipeline_configs(self):
       return requests.get(_url(self.BASE_URL, self.relative_paths["configs"]))
 
   def get_pipeline_config_by_ID(self, PipelineID):
