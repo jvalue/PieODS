@@ -284,8 +284,136 @@ DataImport
 
 """
 # from helpers import _url
-# import requests
-from .helpers import *
+from typing import Type
+import requests
+import json
+#from .helpers import *
+def _url(r, *path_components):
+    for c in path_components:
+        r += "/{}".format(str(c)) 
+    return r
+
+# class Config():
+#   def __init__(self) -> None:
+#       self.dict = 
+
+class Unsupported_by_ODS(Exception):
+  def __init__(self, *args: object) -> None:
+      super().__init__(*args)
+  
+
+class ProtocolConfig():
+  def __init__(self, type, location, encoding) -> None:
+      self.type = type
+      self.parameters = {"location":location, "encoding":encoding}
+
+  @property
+  def type(self):
+    return self._type
+  @type.setter
+  def type(self, new_type):
+    if type(new_type)==str:
+      if new_type == "HTTP": #should be extended to fetch (AdapterAPI.get_supported_protocols()) the supported protocols and loop over them
+        self._type = new_type
+      else:
+        raise Unsupported_by_ODS("The protocol '{}' is not yet supported!".format(new_type))
+    else:
+      raise TypeError("Invalid value for protocol type!\nType must be passed as string!")
+
+  @property
+  def parameters(self):
+    return self._parameters
+  @parameters.setter
+  def parameters(self, new_parameters):
+    if type(new_parameters)==dict:
+      self._parameters = new_parameters
+    else:
+      raise TypeError("Invalid type for protocol parameters!\nParameters must be passed as dict!")
+  
+  def get_dict(self):
+    return {"type":self.type, "parameters":self.parameters}
+  def get_json(self):
+    return json.dumps(self.get_dict())
+  def __str__(self):
+    return str(self.get_json())
+
+class CSVparameters():
+  def __init__(self, col_separtor=None, line_separator=None, skip_first_data_row=None, first_row_as_header=None) -> None:
+      self.column_separator = col_separtor
+      self.line_separator = line_separator
+      self.skip_first_data_row = skip_first_data_row
+      self.first_row_as_header = first_row_as_header
+  def get_dict(self):
+    return  {
+      "columnSeparator": self.column_separator,
+      "lineSeparator": self.line_separator,
+      "skipFirstDataRow": self.skip_first_data_row,
+      "firstRowAsHeader": self.first_row_as_header
+    }
+  def get_json(self):
+    return json.dumps(self.get_dict())
+  def __str__(self):
+    return str(self.get_json())
+
+class FormatConfig():
+  def __init__(self, type=None, parameters =None) -> None:
+      self.format_type = type
+      self.format_parameters = parameters
+
+  @property
+  def format_type(self):
+    return self._format_type
+  @format_type.setter
+  def format_type(self, new_format_type):
+    if type(new_format_type)==str:
+      new_format_type= new_format_type.upper()
+      if new_format_type=="JSON" or new_format_type=="XML" or new_format_type=="CSV":
+        self._format_type = new_format_type
+      else:
+        raise Unsupported_by_ODS("This format type is not supported!")
+    else:
+      raise TypeError("Invalid value for format type!\nFormat type must be passed as string!")
+
+  @property
+  def format_parameters(self):
+    return self._format_parameters
+  @format_parameters.setter
+  def format_parameters(self, new_parameters):
+    if new_parameters=={} or new_parameters==None:
+      self._format_parameters = new_parameters
+    elif type(new_parameters)==CSVparameters:
+      self._format_parameters = new_parameters.get_dict()
+    else:
+      raise TypeError("Invalid type for format config parameters!\nParameters must be either an empty dict or a CSVparameters object!") 
+  
+  def get_dict(self):
+    return {
+            "format":{
+              "type":self.format_type,
+              "parameters":self.format_parameters
+            }
+          }
+  def get_json(self):
+    return json.dumps(self.get_dict())
+  def __str__(self):
+    return str(self.get_json())
+
+
+class TriggerConfig():
+  def __init__(self, first_ex=None, ) -> None:
+      self.
+
+
+
+
+
+
+a = ProtocolConfig("HTTP","There" ,"UTF-8" )
+print(a  )   
+
+# class AdapterConfig(ProtocolConfig, formatConfig):
+#   def __init__(self) -> None:
+#       self.protocol = Protocol  
 
 #Adapter API (data import)
 class AdapterAPI():
@@ -322,7 +450,9 @@ class AdapterAPI():
     def execute_raw_preview(self, ProtocolConfig):
         return requests.post(_url(self.BASE_URL, self.relative_paths["preview"]), json=ProtocolConfig)
 
-
+ada = AdapterAPI()
+print(ada.get_supported_protocols().text)
+# print(ada.get_supported_data_formats().text)
 #Datasource API
 #As it has the same self.BASE_URL, I put it in the  same file.
 class DatasourceAPI():
