@@ -283,26 +283,32 @@ DataImport
     }
 
 """
-# from helpers import _url
-from typing import Type
+from helpers import _url #this works
+#from helpers import * #this doesn't work
+#from .helpers import * #this doesn't work
+
+from datetime import time
+
 import requests
 import json
 #from .helpers import *
-def _url(r, *path_components):
-    for c in path_components:
-        r += "/{}".format(str(c)) 
-    return r
+# def _url(r, *path_components):
+#     for c in path_components:
+#         r += "/{}".format(str(c)) 
+#     return r
 
-# class Config():
-#   def __init__(self) -> None:
-#       self.dict = 
+class Config():
+  def get_json(self):
+    return json.dumps(self.get_dict())
+  def __str__(self):
+    return str(self.get_json())
 
 class Unsupported_by_ODS(Exception):
   def __init__(self, *args: object) -> None:
       super().__init__(*args)
   
 
-class ProtocolConfig():
+class ProtocolConfig(Config):
   def __init__(self, type, location, encoding) -> None:
       self.type = type
       self.parameters = {"location":location, "encoding":encoding}
@@ -332,12 +338,10 @@ class ProtocolConfig():
   
   def get_dict(self):
     return {"type":self.type, "parameters":self.parameters}
-  def get_json(self):
-    return json.dumps(self.get_dict())
-  def __str__(self):
-    return str(self.get_json())
 
-class CSVparameters():
+
+class CSVparameters(Config):
+
   def __init__(self, col_separtor=None, line_separator=None, skip_first_data_row=None, first_row_as_header=None) -> None:
       self.column_separator = col_separtor
       self.line_separator = line_separator
@@ -350,12 +354,10 @@ class CSVparameters():
       "skipFirstDataRow": self.skip_first_data_row,
       "firstRowAsHeader": self.first_row_as_header
     }
-  def get_json(self):
-    return json.dumps(self.get_dict())
-  def __str__(self):
-    return str(self.get_json())
 
-class FormatConfig():
+
+class FormatConfig(Config):
+
   def __init__(self, type=None, parameters =None) -> None:
       self.format_type = type
       self.format_parameters = parameters
@@ -393,23 +395,102 @@ class FormatConfig():
               "parameters":self.format_parameters
             }
           }
-  def get_json(self):
-    return json.dumps(self.get_dict())
-  def __str__(self):
-    return str(self.get_json())
 
 
-class TriggerConfig():
-  def __init__(self, first_ex=None, ) -> None:
-      self.
+class TriggerConfig(Config):
+
+  def __init__(self, first_ex=None, interval=None, periodic = None) -> None:
+      self.first_execution = first_ex
+      self.interval = interval
+      self.periodic = periodic
+  def get_dict(self):
+    return {
+            "format":self.first_execution,
+            "interval":self.interval,
+            "periodic":self.periodic,
+          }
+
+class Metadata(Config):
+  def __init__(self, author, display_name, license, description, timestamp) -> None:
+    self.author = author
+    self.display_name = display_name
+    self.license = license
+    self.description = description
+    self.creation_timestamp = timestamp
+  def get_dict(self):
+    return {
+      "author": self.author,
+      "displayName": self.display_name,
+      "license": self.license,
+      "description": self.description,
+      "creationTimestamp": self.creation_timestamp,
+      }
+
+class DataImport(Config):
+  def __init__(self, id, timestamp, location) -> None:
+      self.id = int(id)
+      self.timestamp = timestamp
+      self.location = location
+  def get_dict(self):
+    return {
+      "id": self.id,
+      "timestamp": self.timestamp,
+      "location": self.location
+    }
+
+class AdapterConfig(Config):
+  def __init__(self, protocol_config, format_config) -> None:
+      self.protocol_config = protocol_config
+      self.format_config = format_config
+  def get_dict(self):
+    return {
+      "protocol": self.protocol.get_dict(), 
+      "format": self.format.get_dict()
+    }
+
+class DatasourceConfig(Config):
+  def __init__(self, id, protocol_config, format_config, trigger_config, meta):
+    self.id = int(id)
+    self.protocol_config = protocol_config
+    self.format_config = format_config
+    self.trigger_config = trigger_config
+    self.meta_data = meta
+  def get_dict(self):
+    return {
+      "id": self.id,
+      "protocol": self.protocol_config,
+      "format": self.format_config,
+      "trigger": self.trigger_config,
+      "metadata": self.meta_data
+    }
+
+class Parameters(Config):
+  """
+  Example:
+  +++++++++
+
+  ::
+
+      {
+      "parameters": {
+        "station": "BONN"
+        }
+      }
+  """
+  def __init__(self, *pairs) -> None:
+    self.kv_pairs = {}
+    for p in pairs:
+      for k in p:
+        self.kv_pairs[k] = p[k]
+    def get_dict(self):
+      return {
+        "parameters":self.kv_pairs
+      }
 
 
 
-
-
-
-a = ProtocolConfig("HTTP","There" ,"UTF-8" )
-print(a  )   
+# a = ProtocolConfig("HTTP","There" ,"UTF-8" )
+# print(a  )   
 
 # class AdapterConfig(ProtocolConfig, formatConfig):
 #   def __init__(self) -> None:
@@ -452,7 +533,7 @@ class AdapterAPI():
 
 ada = AdapterAPI()
 print(ada.get_supported_protocols().text)
-# print(ada.get_supported_data_formats().text)
+print(ada.get_supported_data_formats().text)
 #Datasource API
 #As it has the same self.BASE_URL, I put it in the  same file.
 class DatasourceAPI():
@@ -500,10 +581,10 @@ class DatasourceAPI():
   def delete_Datasource(self, DatasourceID):
     return requests.delete(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID))
 
-  def trigger_DataImport(self, DatasourceID, Parameters):
-    return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "trigger"), json=Parameters)
+  def trigger_DataImport_without_params(self, DatasourceID):
+    return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "trigger"))
 
-  def trigger_DataImport(self, DatasourceID, Parameters):
+  def trigger_DataImport_with_params(self, DatasourceID, Parameters):
     return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "trigger"), json=Parameters)
 
   def get_All_Dataimports_of_Datasource(self, DatasourceID):
