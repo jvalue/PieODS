@@ -30,7 +30,7 @@ Note that you need to delete existing docker images from your local docker daemo
 When nothing is changed *base_url* is `http://localhost/3000`
 
 """
-# import requests
+import requests
 from .helpers import *
 
 class StorageAPI():
