@@ -1,13 +1,20 @@
 from datetime import date
 import json
+from os import pipe
 from helpers import Unsupported_by_ODS
-from typing import Union
+from typing import Literal, Union
 
 class Config():
   def get_json(self):
     return json.dumps(self.get_dict(), default=str, ensure_ascii=False).encode()
   def __str__(self):
     return str(self.get_json().decode())
+
+
+
+###########################################
+###### Adapter Service Data Structs #######
+###########################################
 
 class ProtocolConfig(Config):
   def __init__(self, type:str, location:str, encoding:str) -> None:
@@ -98,7 +105,7 @@ class FormatConfig(Config):
           }
 
 
-class TriggerConfig(Config):
+class DatasourceTriggerConfig(Config):
 
   def __init__(self, first_ex:str=None, interval:int=None, periodic:bool = None) -> None:
       self.first_execution = first_ex #Date (format: yyyy-MM-dd'T'HH:mm:ss.SSSXXX)
@@ -154,7 +161,7 @@ class DatasourceConfig(Config):
   def __init__(self, id:int,
                 protocol_config:ProtocolConfig,
                 format_config:FormatConfig,
-                trigger_config:TriggerConfig,
+                trigger_config:DatasourceTriggerConfig,
                 meta:Metadata):
     self.id = int(id)
     self.protocol_config = protocol_config
@@ -192,6 +199,10 @@ class KVpairs(Config):
 
 class Parameters(KVpairs):
     """
+    {
+  "parameters": <<Map of type <String, String> for open parameter to replace with the value>>
+    }
+
     Example:
     +++++++++
 
@@ -212,6 +223,12 @@ class Parameters(KVpairs):
         return {
         "parameters":self.kv_pairs
         }
+
+
+
+#################################################
+######## Pipeline Service Data Structs ##########
+#################################################
 
 class PipelineExecutionRequest(Config):
     def __init__(self, data:KVpairs, func:str) -> None:
@@ -265,6 +282,12 @@ class PipeLineConfigDTO(Config):
             "metadata":self.meta_data.get_dict()
         }
 
+
+
+
+#################################################
+######## Storage Service Data Structs ###########
+#################################################
 class PipeLineID(Config):
     def __init__(self, id:int) -> None:
         self.pipelineID = int(id)
@@ -288,6 +311,81 @@ class DataForStorage(Config):
             "license":self.license,
             "pipelineId":self.pipe_line_ID
         }
+
+
+
+
+#################################################
+###### Notification Service Data Structs ########
+#################################################
+
+class WebhookNotificationParameter(Config):
+    def __init__(self, url:str) -> None:
+        self.url = url
+    def get_dict(self):
+        return {
+            "parameter":{
+                "url":self.url
+            }
+        }
+
+class SlackNotificationParameter(Config):
+    def __init__(self, workspaceId:str, channelId:str, secret:str) -> None:
+        self.workspace_ID = workspaceId
+        self.channel_ID = channelId
+        self.secret = secret
+    def get_dict(self):
+        return {
+            "parameter":{
+                "workspaceId":self.workspace_ID,
+                "channelId":self.channel_ID,
+                "secret":self.secret
+            }
+        }
+
+class FirebaseNotificationParameter(Config):
+    def __init__(self, projectId:str, clientEmail:str, privateKey:str, topic:str) -> None:
+        self.project_ID = projectId
+        self.client_email = clientEmail
+        self.private_key = privateKey
+        self.topic = topic
+    def get_dict(self):
+        return {
+            "parameter":{
+                "projectId":self.project_ID,
+                "clientEmail":self.client_email,
+                "privateKey":self.private_key,
+                "topic":self.topic
+            }
+        }
+        
+class NotificationWriteModel(Config):
+    def __init__(self, pipelineId:int, condition:str,
+                type:Literal["WEBHOOK", "SLACK" , "FCM"],
+                parameter:Union[SlackNotificationParameter, FirebaseNotificationParameter, WebhookNotificationParameter] ) -> None:
+        self.pipeline_ID = int(pipelineId)
+        self.condition = condition
+        self.type = type
+        self.parameter = parameter
+    def get_dict(self):
+        return {
+            "pipelineId": self.pipeline_ID,
+            "condition": self.condition,
+            "type": self.type,
+            "parameter": self.parameter.get_dict()
+            }
+
+class NotificationTriggerConfig(Config):
+    def __init__(self, pipelineId:int, pipelineName:str, data:KVpairs):
+        self.pipeline_ID = int(pipelineId)
+        self.pipeline_name = pipelineName
+        self.data = data
+    def get_dict(self):
+        return {
+            "pipelineId": self.pipeline_ID,
+            "pipelineName": self.pipeline_name,
+            "data": self.data.get_dict()
+            }
 
 #TO-DO#
 #class JobResult #may need to implement that to expand postprocessing functionality
