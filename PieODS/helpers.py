@@ -1,8 +1,4 @@
-import requests
 import datetime
-
-# def fill(string_to_fill, *fillers):
-#     pass
 
 def _url(r, *path_components):
     for c in path_components:
@@ -11,4 +7,7 @@ def _url(r, *path_components):
 
 def get_current_timestamp():
     return datetime.datetime.now(tz =  datetime.datetime.now().astimezone().tzinfo).isoformat(timespec='milliseconds')
+
+class Unsupported_by_ODS(Exception):
+    pass
 

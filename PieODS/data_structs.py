@@ -163,27 +163,72 @@ class DatasourceConfig(Config):
       "metadata": self.meta_data
     }
 
-class Parameters(Config):
-  """
-  Example:
-  +++++++++
+class KVpairs(Config):
+    """
+    Example:
+    +++++++++
 
-  ::
+    ::
 
-      {
-      "parameters": {
-        "station": "BONN"
-        }
-      }
-  """
-  def __init__(self, *pairs) -> None:
-    self.kv_pairs = {}
-    for p in pairs:
-      for k in p:
-        self.kv_pairs[k] = p[k]
+    {
+        "station": "BONN",
+        "secret": 1
+    }
+    """
+    def __init__(self, *pairs) -> None:
+        self.kv_pairs = {}
+        for p in pairs:
+            for k in p:
+                self.kv_pairs[k] = p[k]
     def get_dict(self):
-      return {
-        "parameters":self.kv_pairs
-      }
+        return self.kv_pairs
 
+class Parameters(KVpairs):
+    """
+    Example:
+    +++++++++
+
+    ::
+
+        {
+        "parameters": {
+            "station": "BONN"
+            }
+        }
+    """
+    #   def __init__(self, *pairs) -> None:
+    #     self.kv_pairs = {}
+    #     for p in pairs:
+    #       for k in p:
+    #         self.kv_pairs[k] = p[k]
+    def get_dict(self):
+        return {
+        "parameters":self.kv_pairs
+        }
+
+
+      
+
+class PipelineExecutionRequest(Config):
+    def __init__(self, data, func) -> None:
+        self.data = data 
+        self.func = func 
+    def get_dict(self):
+        return {
+            "data": self.data.get_dict(), #KVpairs, pass key:value pairs to the init method of class KVpairs
+            "func": self.func #string [VALID JS CODE]
+            }
+
+#TO-DO#
+#class JobResult #may need to implement that to expand postprocessing functionality
+
+class PipelineConfigTriggerRequest(Config):
+    def __init__(self, id, data) -> None:
+        self.data_source_ID = id
+        self.data = data #KVpairs
+    def get_dict(self):
+        return {
+            "datasourceId": int(self.data_source_ID),
+            "data":self.data.get_dict() #KVpairs
+        }
 
