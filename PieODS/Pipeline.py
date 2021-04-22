@@ -207,12 +207,13 @@ PipelineConfigDTO:
   }
 }
 """
-# import requests
+import requests
 from helpers import _url
 #from .helpers import *
 
-#thinking about doing OOP version, might be easier to distinguish concepts like adapter and datasource that are in the same file
-#should be imported from a configs or main file
+import data_structs
+
+
 class PipelineAPI:
   def __init__(self) -> None:
     
@@ -232,7 +233,7 @@ class PipelineAPI:
       return requests.get(_url(self.BASE_URL, self.relative_paths["version"]))
 
   #assuming body is always json
-  def execute_pipeline(self, PipelineExecutionRequest):
+  def execute_pipeline(self, PipelineExecutionRequest:data_structs.PipelineExecutionRequest):
       """Executes the pipeline
 
       Parameters
@@ -255,16 +256,16 @@ class PipelineAPI:
               "stats": stats
               }
       """
-      return requests.post(_url(self.BASE_URL, self.relative_paths["job"]), json=PipelineExecutionRequest)
+      return requests.post(_url(self.BASE_URL, self.relative_paths["job"]), json=PipelineExecutionRequest.get_json())
 
-  def trigger_pipeline(self, PipelineConfigTriggerRequest):
+  def trigger_pipeline(self, PipelineConfigTriggerRequest:data_structs.PipelineConfigTriggerRequest):
       """Triggers the pipeline
 
       Parameters
       ----------
       PipelineConfigTriggerRequest: json
       """
-      return requests.post(_url(self.BASE_URL, self.relative_paths["trigger"]), json=PipelineConfigTriggerRequest)
+      return requests.post(_url(self.BASE_URL, self.relative_paths["trigger"]), json=PipelineConfigTriggerRequest.get_json())
 
   def get_all_pipeline_configs(self):
       return requests.get(_url(self.BASE_URL, self.relative_paths["configs"]))
@@ -277,7 +278,7 @@ class PipelineAPI:
       """
       return requests.get(_url(self.BASE_URL, self.relative_paths["configs"], PipelineID))
 
-  def create_pipeline_config(self, PipelineconfigDTO):
+  def create_pipeline_config(self, PipelineconfigDTO:data_structs.PipeLineConfigDTO):
     """Create a pipeline config
 
     :param PipelineconfigDTO: identifier of a pipeline config
@@ -285,9 +286,9 @@ class PipelineAPI:
     :return: [description]
     :rtype: [type]
     """  ""
-    return requests.post(_url(self.BASE_URL, self.relative_paths["configs"]), json=PipelineconfigDTO)
+    return requests.post(_url(self.BASE_URL, self.relative_paths["configs"]), json=PipelineconfigDTO.get_json())
 
-  def update_pipeline_config(self, PipelineID, PipelineconfigDTO):
+  def update_pipeline_config(self, PipelineID:int, PipelineconfigDTO:data_structs.PipeLineConfigDTO):
     """Update a pipeline config.
 
     :param PipelineconfigDTO: [description]
@@ -295,12 +296,12 @@ class PipelineAPI:
     :return: [description]
     :rtype: [type]
     """  ""
-    return requests.put(_url(self.BASE_URL, self.relative_paths["configs"], PipelineID), json=PipelineconfigDTO)
+    return requests.put(_url(self.BASE_URL, self.relative_paths["configs"], PipelineID), json=PipelineconfigDTO.get_json())
 
   def delete_all_pipeline_configs(self):
       return requests.delete(_url(self.BASE_URL, self.relative_paths["configs"]))
 
-  def get_pipeline_config_by_ID(self, PipelineID):
+  def get_pipeline_config_by_ID(self, PipelineID:int):
       """
       Parameters
       ----------

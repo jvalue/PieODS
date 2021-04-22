@@ -33,6 +33,8 @@ When nothing is changed *base_url* is `http://localhost/3000`
 import requests
 from .helpers import *
 
+import data_structs
+
 class StorageAPI():
     def __init__(self) -> None:
         self.BASE_URL = "http://localhost/3000"
@@ -41,16 +43,16 @@ class StorageAPI():
             "delete_structure":"rpc/deleteStructureForDatasource",
         }
 
-    def create_structure_for_Datasource(self, request_body):
-        return requests.post(_url(self.BASE_URL, self.relative_paths["create_structure"]), json=request_body)
+    def create_structure_for_Datasource(self, request_body:data_structs.PipeLineIDforStorage):
+        return requests.post(_url(self.BASE_URL, self.relative_paths["create_structure"]), json=request_body.get_json())
     
-    def delete_structure_for_Datasource(self, request_body):
-        return requests.post(_url(self.BASE_URL, self.relative_paths["create_structure"]), json=request_body)
+    def delete_structure_for_Datasource(self, request_body:data_structs.PipeLineIDforStorage):
+        return requests.post(_url(self.BASE_URL, self.relative_paths["create_structure"]), json=request_body.get_json())
 
-    def add_pipeline_data(self, PipelineID,  request_body):
-        return requests.post(_url(self.BASE_URL, PipelineID), json=request_body)
+    def add_pipeline_data(self, PipelineID:int,  request_body:data_structs.DataForStorage):
+        return requests.post(_url(self.BASE_URL, PipelineID), json=request_body.get_json())
 
-    def get_pipeline_data(self, PipelineID):
+    def get_pipeline_data(self, PipelineID:int):
         return requests.get(_url(self.BASE_URL, PipelineID))
 
     

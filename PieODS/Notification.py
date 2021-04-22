@@ -103,9 +103,10 @@ Equal to `NotificationWriteModel`, but has an additional `id: number` field.
 
 """
 
-#import requests
+import requests
 ##from requests.models import requote_uri
 from helpers import _url
+import data_structs
 
 class NotificationAPI():
     def __init__(self) -> None:
@@ -122,8 +123,8 @@ class NotificationAPI():
     def get_service_version(self):
         return requests.get(_url(self.BASE_URL, self.relative_paths["version"]))
 
-    def create_notificationConfig(self, NotificationWriteModel):
-        return requests.get(_url(self.BASE_URL, self.relative_paths["configs"]), json=NotificationWriteModel)
+    def create_notificationConfig(self, NotificationWriteModel:data_structs.NotificationWriteModel):
+        return requests.get(_url(self.BASE_URL, self.relative_paths["configs"]), json=NotificationWriteModel.get_json())
 
     def get_all_notificationConfigs(self):
         return requests.get(_url(self.BASE_URL, self.relative_paths["configs"]))
@@ -131,17 +132,22 @@ class NotificationAPI():
     def get_pipeline_notificationConfigs(self, PipelineID):
         return requests.get(_url(self.BASE_URL, "{}?pipelineId={}".format(self.relative_paths["configs"], PipelineID)))
     
-    def get_notificationConfig(self, NotificationConfigID):
+    def get_notificationConfig(self, NotificationConfigID:int):
         return requests.get(_url(self.BASE_URL, self.relative_paths["configs"], NotificationConfigID))
 
-    def get_notificationConfig(self, NotificationConfigID):
+    def get_notificationConfig(self, NotificationConfigID:int):
         return requests.get(_url(self.BASE_URL, self.relative_paths["configs"], NotificationConfigID))
 
-    def update_notificationConfig(self, NotificationConfigID, NotificationWriteModel):
-        return requests.put(_url(self.BASE_URL, self.relative_paths["configs"], NotificationConfigID), json=NotificationWriteModel)
+    def update_notificationConfig(self, NotificationConfigID:int, NotificationWriteModel:data_structs.NotificationWriteModel)):
+        return requests.put(_url(self.BASE_URL, self.relative_paths["configs"], NotificationConfigID), json=NotificationWriteModel.get_json())
 
-    def delete_notificationConfig(self, NotificationConfigID):
+    def delete_notificationConfig(self, NotificationConfigID:int):
         return requests.delete(_url(self.BASE_URL, self.relative_paths["configs"], NotificationConfigID))
 
-    def trigger_all_notifications(self, TriggerConfig):
-        return requests.put(_url(self.BASE_URL, self.relative_paths["trigger"]), json=TriggerConfig)
+    def trigger_all_notifications(self, TriggerConfig:data_structs.NotificationTriggerConfig):
+        return requests.put(_url(self.BASE_URL, self.relative_paths["trigger"]), json=TriggerConfig.get_json())
+
+
+#########################################
+####### Example Requests ################
+#########################################

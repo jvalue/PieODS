@@ -1,6 +1,6 @@
 from datetime import date
 import json
-from os import pipe
+
 from helpers import Unsupported_by_ODS
 from typing import Literal, Union
 
@@ -103,7 +103,6 @@ class FormatConfig(Config):
               "parameters":self.format_parameters
             }
           }
-
 
 class DatasourceTriggerConfig(Config):
 
@@ -358,7 +357,7 @@ class FirebaseNotificationParameter(Config):
                 "topic":self.topic
             }
         }
-        
+
 class NotificationWriteModel(Config):
     def __init__(self, pipelineId:int, condition:str,
                 type:Literal["WEBHOOK", "SLACK" , "FCM"],

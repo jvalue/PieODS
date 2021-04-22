@@ -284,6 +284,7 @@ DataImport
 
 """
 from helpers import _url #this works
+import data_structs
 #from helpers import * #this doesn't work
 #from .helpers import * #this doesn't work
 
@@ -315,13 +316,13 @@ class AdapterAPI():
         """    
         return requests.get(_url(self.BASE_URL, self.relative_paths["protocols"]))
 
-    def execute_configured_preview(self, AdapterConfig):
+    def execute_configured_preview(self, AdapterConfig:data_structs.AdapterConfig):
         #Note: AdapterConfig consists of both the protcol of data transfer and the format that it should be delivered in.
         #while the raw_preview needs only the protocol of data transfer
-        return requests.post(_url(self.BASE_URL, self.relative_paths["preview"]), json=AdapterConfig)
+        return requests.post(_url(self.BASE_URL, self.relative_paths["preview"]), json=AdapterConfig.get_json())
 
-    def execute_raw_preview(self, ProtocolConfig):
-        return requests.post(_url(self.BASE_URL, self.relative_paths["preview"]), json=ProtocolConfig)
+    def execute_raw_preview(self, ProtocolConfig:data_structs.ProtocolConfig):
+        return requests.post(_url(self.BASE_URL, self.relative_paths["preview"]), json=ProtocolConfig.get_json())
 
 
 #Datasource API
@@ -359,11 +360,11 @@ class DatasourceAPI():
   def get_DatasourceConfig(self, DatasourceID):
     return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID))
 
-  def create_Datasource(self, DatasourceConfig):
-    return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"]), json=DatasourceConfig)
+  def create_Datasource(self, DatasourceConfig:data_structs.DatasourceConfig):
+    return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"]), json=DatasourceConfig.get_json())
 
-  def update_Datasource(self, DatasourceID, DatasourceConfig):
-    return requests.put(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID), json=DatasourceConfig)
+  def update_Datasource(self, DatasourceID, DatasourceConfig:data_structs.DatasourceConfig):
+    return requests.put(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID), json=DatasourceConfig.get_json())
 
   def delete_all_Datasources(self):
     return requests.delete(_url(self.BASE_URL, self.relative_paths["datasources"]))
@@ -374,8 +375,8 @@ class DatasourceAPI():
   def trigger_DataImport_without_params(self, DatasourceID):
     return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "trigger"))
 
-  def trigger_DataImport_with_params(self, DatasourceID, Parameters):
-    return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "trigger"), json=Parameters)
+  def trigger_DataImport_with_params(self, DatasourceID, Parameters:data_structs.Parameters):
+    return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "trigger"), json=Parameters.get_json())
 
   def get_All_Dataimports_of_Datasource(self, DatasourceID):
     return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "imports"))
@@ -396,3 +397,8 @@ class DatasourceAPI():
 # ada = AdapterAPI()
 # print(ada.get_supported_protocols().text)
 # print(ada.get_supported_data_formats().text)
+
+#########################################
+####### Example Requests ################
+#########################################
+ada = AdapterAPI()
