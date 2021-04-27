@@ -399,7 +399,7 @@ class DatasourceAPI():
     return requests.put(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID), json=DatasourceConfig.get_dict())
 
   def delete_all_Datasources(self):
-    return requests.delete(_url(self.BASE_URL, self.relative_paths["datasources"]))
+    return requests.delete(_url(self.BASE_URL, self.relative_paths["datasources"], "")) #the trailing slash is added to the url for the DELETE method.
   
   def delete_Datasource(self, DatasourceID:int):
     return requests.delete(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID))
@@ -577,7 +577,7 @@ delete_all_ds = dsa.delete_all_Datasources()
 print(delete_all_ds.text)
 """
 
-dsa = DatasourceAPI()
+# dsa = DatasourceAPI()
 # protocol_config_params_json = data_structs.ProtocolConfigParameters(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations.json",
 #                                                                     encoding= "UTF-8")
 # protocol_config_json = data_structs.ProtocolConfig("HTTP", protocol_config_params_json)
@@ -592,24 +592,24 @@ dsa = DatasourceAPI()
 # ds_config = data_structs.DatasourceConfig(None, protocol_config_json, format_config_json, ds_trigger_config, ds_metadata) 
 # create_datasource = dsa.create_Datasource(ds_config)
 
-### Get all datasources
-all_datasources_configs = dsa.get_all_DatasourceConfigs()
-for ds in json.loads(all_datasources_configs.content):
-  #dsa.delete_Datasource(ds["id"])
-  try:
-    print(ds["id"])
-    dsa.delete_Datasource(ds["id"])
-  except:
-    print("Not there")
+# ### Get all datasources
+# all_datasources_configs = dsa.get_all_DatasourceConfigs()
+# for ds in json.loads(all_datasources_configs.content):
+#   #dsa.delete_Datasource(ds["id"])
+#   try:
+#     print(ds["id"])
+#     #dsa.delete_Datasource(ds["id"])
+#   except:
+#     print("Not there")
   
-#delete_all_ds = dsa.delete_all_Datasources()
+# delete_all_ds = dsa.delete_all_Datasources()
 
-all_datasources_configs = dsa.get_all_DatasourceConfigs()
-for ds in json.loads(all_datasources_configs.content):
+# all_datasources_configs = dsa.get_all_DatasourceConfigs()
+# for ds in json.loads(all_datasources_configs.content):
   
-  try:
-    print(ds["id"])
-  except:
-    print("Not there")
+#   try:
+#     print(ds["id"])
+#   except:
+#     print("Not there")
 
-print("done")
+# print("done")

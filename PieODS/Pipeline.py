@@ -256,7 +256,7 @@ class PipelineAPI:
               "stats": stats
               }
       """
-      return requests.post(_url(self.BASE_URL, self.relative_paths["job"]), json=PipelineExecutionRequest.get_json())
+      return requests.post(_url(self.BASE_URL, self.relative_paths["job"]), json=PipelineExecutionRequest.get_dict())
 
   def trigger_pipeline(self, PipelineConfigTriggerRequest:data_structs.PipelineConfigTriggerRequest):
       """Triggers the pipeline
@@ -265,7 +265,7 @@ class PipelineAPI:
       ----------
       PipelineConfigTriggerRequest: json
       """
-      return requests.post(_url(self.BASE_URL, self.relative_paths["trigger"]), json=PipelineConfigTriggerRequest.get_json())
+      return requests.post(_url(self.BASE_URL, self.relative_paths["trigger"]), json=PipelineConfigTriggerRequest.get_dict())
 
   def get_all_pipeline_configs(self):
       return requests.get(_url(self.BASE_URL, self.relative_paths["configs"]))
@@ -286,7 +286,7 @@ class PipelineAPI:
     :return: [description]
     :rtype: [type]
     """  ""
-    return requests.post(_url(self.BASE_URL, self.relative_paths["configs"]), json=PipelineconfigDTO.get_json())
+    return requests.post(_url(self.BASE_URL, self.relative_paths["configs"]), json=PipelineconfigDTO.get_dict())
 
   def update_pipeline_config(self, PipelineID:int, PipelineconfigDTO:data_structs.PipeLineConfigDTO):
     """Update a pipeline config.
@@ -296,15 +296,74 @@ class PipelineAPI:
     :return: [description]
     :rtype: [type]
     """  ""
-    return requests.put(_url(self.BASE_URL, self.relative_paths["configs"], PipelineID), json=PipelineconfigDTO.get_json())
+    return requests.put(_url(self.BASE_URL, self.relative_paths["configs"], PipelineID), json=PipelineconfigDTO.get_dict())
 
   def delete_all_pipeline_configs(self):
       return requests.delete(_url(self.BASE_URL, self.relative_paths["configs"]))
 
-  def get_pipeline_config_by_ID(self, PipelineID:int):
+  def delete_pipeline_config_by_ID(self, PipelineID:int):
       """
       Parameters
       ----------
       PipelineID: int
       """
       return requests.delete(_url(self.BASE_URL, self.relative_paths["configs"], PipelineID))
+
+
+#########################################
+########## Example Requests #############
+#########################################
+
+############# PipelineAPI ################
+
+pl = PipelineAPI()
+
+### Get all pipelines
+all_pipelines = pl.get_all_pipeline_configs()
+print(all_pipelines.status_code)
+
+### Create a pipeline
+#creating a datasource for the pipeline
+import Adapter
+import json
+dsa = Adapter.DatasourceAPI()
+protocol_config_params_json = data_structs.ProtocolConfigParameters(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations.json",
+                                                                    encoding= "UTF-8")
+protocol_config_json = data_structs.ProtocolConfig("HTTP", protocol_config_params_json)
+format_config_json = data_structs.FormatConfig(type="JSON",
+                                              parameters={})
+ds_trigger_config = data_structs.DatasourceTriggerConfig(first_ex="2018-10-07T01:32:00.123Z",
+                                                          interval=60000,
+                                                          periodic=True)
+ds_metadata = data_structs.Metadata(author="icke",
+                                    display_name="pegelOnline",
+                                    license="none")
+ds_config = data_structs.DatasourceConfig(None, protocol_config_json, format_config_json, ds_trigger_config, ds_metadata) 
+create_datasource = dsa.create_Datasource(ds_config)
+ds_id = json.loads(create_datasource.content)["id"]
+
+pl_config_DTO = data_structs.PipeLineConfigDTO(ds_id,
+                                              data_structs.Transformation("data.test = 'abc'; return data;"),
+                                              data_structs.Metadata(author="icke",
+                                                                    license= "none",
+                                                                    display_name= "exampleRequest"
+                                                                    )
+                                              )
+created_pipeline = pl.create_pipeline_config(pl_config_DTO)
+pl_id = json.loads(created_pipeline.content)["id"]
+
+
+### Get pipeline x
+retreived_pl = pl.get_pipeline_config_by_ID(pl_id)
+
+### Update a pipeline
+updated_pl_config_DTO = pl_config_DTO
+updated_pl_config_DTO.meta_data.display_name = None
+
+updated_pipeline = pl.update_pipeline_config(pl_id,updated_pl_config_DTO)
+
+###delete a pipeline
+delete_pl = pl.delete_pipeline_config_by_ID(pl_id)
+
+### Delete all pipelines
+deleted_all = pl.delete_all_pipeline_configs()
