@@ -6,20 +6,56 @@ from typing import Literal, Union
 
 class Config():
   def get_json(self):
-    return json.dumps(self.get_dict(), default=str, ensure_ascii=False).encode()
+    #return json.dumps(self.get_dict(), default=str, ensure_ascii=False).encode()
+    return json.dumps(self.get_dict())#,  ensure_ascii=False , indent=2, separators=(',', ': '))#.replace('\\"',"\"")
+
   def __str__(self):
-    return str(self.get_json().decode())
+    #return str(self.get_json().decode())
+    return str(self.get_json())
 
+class KVpairs(Config):
+    """
+    Example:
+    +++++++++
 
+    ::
+
+    {
+        "station": "BONN",
+        "secret": 1
+    }
+    """
+    def __init__(self, *pairs) -> None:
+        self.kv_pairs = {}
+        for p in pairs: #pairs is an iterable containing single-KV dicts
+            for k in p:
+                self.kv_pairs[k] = p[k]
+    def get_dict(self):
+        return self.kv_pairs
 
 ###########################################
-###### Adapter Service Data Structs #######
+# Adapter&Datsource Service Data Structs ##
 ###########################################
+
+class ProtocolConfigParameters(Config):
+  def __init__(self, location:str=None, encoding:str=None, default_params:KVpairs = None) -> None:
+      self.location = location
+      self.encoding = encoding
+      self.default_parameters= default_params
+
+  def get_dict(self):#create dict of non-empty only
+    to_be_returned= {
+      "location": self.location,
+      "encoding": self.encoding,
+      "defaultParameters": self.default_parameters.get_dict() if isinstance(self.default_parameters, KVpairs) else None
+      }
+    return {k: v for k, v in to_be_returned.items() if v is not None}
+
 
 class ProtocolConfig(Config):
-  def __init__(self, type:str, location:str, encoding:str) -> None:
+  def __init__(self, type:str, protocolConfigParams:ProtocolConfigParameters) -> None:
       self.type = type
-      self.parameters = {"location":location, "encoding":encoding}
+      self.parameters = protocolConfigParams
 
   @property
   def type(self):
@@ -39,13 +75,13 @@ class ProtocolConfig(Config):
     return self._parameters
   @parameters.setter
   def parameters(self, new_parameters):
-    if type(new_parameters)==dict:
+    if type(new_parameters)==ProtocolConfigParameters:
       self._parameters = new_parameters
     else:
-      raise TypeError("Invalid type for protocol parameters!\nParameters must be passed as dict!")
+      raise TypeError("Invalid type for protocol parameters!\nParameters must be passed as ProtocolConfigParameters!")
   
   def get_dict(self):
-    return {"type":self.type, "parameters":self.parameters}
+    return {"type":self.type, "parameters":self.parameters.get_dict()}
 
 
 class CSVparameters(Config):
@@ -98,11 +134,9 @@ class FormatConfig(Config):
   
   def get_dict(self):
     return {
-            "format":{
               "type":self.format_type,
               "parameters":self.format_parameters
             }
-          }
 
 class DatasourceTriggerConfig(Config):
 
@@ -130,7 +164,7 @@ class Metadata(Config):
       "displayName": self.display_name,
       "license": self.license,
       "description": self.description,
-      "creationTimestamp": self.creation_timestamp,
+      "creationTimestamp": self.creation_timestamp
       }
     return {k: v for k, v in to_be_returned.items() if v is not None}
 
@@ -152,76 +186,57 @@ class AdapterConfig(Config):
       self.format_config = format_config
   def get_dict(self):
     return {
-      "protocol": self.protocol.get_dict(), 
-      "format": self.format.get_dict()
+      "protocol": self.protocol_config.get_dict(), 
+      "format": self.format_config.get_dict()
     }
 
 class DatasourceConfig(Config):
-  def __init__(self, id:int,
-                protocol_config:ProtocolConfig,
-                format_config:FormatConfig,
-                trigger_config:DatasourceTriggerConfig,
-                meta:Metadata):
-    self.id = int(id)
+  def __init__(self, id:int=None,
+                protocol_config:ProtocolConfig=None,
+                format_config:FormatConfig=None,
+                trigger_config:DatasourceTriggerConfig=None,
+                meta:Metadata=None):
+    self.id = int(id) if id!=None else None
     self.protocol_config = protocol_config
     self.format_config = format_config
     self.trigger_config = trigger_config
     self.meta_data = meta
   def get_dict(self):
-    return {
+    to_be_returned= {
       "id": self.id,
-      "protocol": self.protocol_config.get_dict(),
-      "format": self.format_config.get_dict(),
-      "trigger": self.trigger_config.get_dict(),
-      "metadata": self.meta_data.get_dict()
+      "protocol": self.protocol_config.get_dict() if isinstance(self.protocol_config, ProtocolConfig) else None,
+      "format": self.format_config.get_dict() if isinstance(self.format_config, FormatConfig) else None,
+      "trigger": self.trigger_config.get_dict() if isinstance(self.trigger_config, DatasourceTriggerConfig) else None,
+      "metadata": self.meta_data.get_dict() if isinstance(self.meta_data, Metadata) else None
     }
+    return {k: v for k, v in to_be_returned.items() if v is not None}
 
-class KVpairs(Config):
-    """
-    Example:
-    +++++++++
-
-    ::
-
-    {
-        "station": "BONN",
-        "secret": 1
-    }
-    """
-    def __init__(self, *pairs) -> None:
-        self.kv_pairs = {}
-        for p in pairs: #pairs is an iterable containing single-KV dicts
-            for k in p:
-                self.kv_pairs[k] = p[k]
-    def get_dict(self):
-        return self.kv_pairs
-
-class Parameters(KVpairs):
-    """
-    {
+class DataImportParameters(KVpairs):
+  """
+  {
   "parameters": <<Map of type <String, String> for open parameter to replace with the value>>
-    }
+  }
 
-    Example:
-    +++++++++
+  Example:
+  +++++++++
 
-    ::
+  ::
 
-        {
-        "parameters": {
-            "station": "BONN"
-            }
-        }
-    """
+      {
+      "parameters": {
+          "station": "BONN"
+          }
+      }
+  """
     #   def __init__(self, *pairs) -> None:
     #     self.kv_pairs = {}
     #     for p in pairs:
     #       for k in p:
     #         self.kv_pairs[k] = p[k]
-    def get_dict(self):
-        return {
-        "parameters":self.kv_pairs
-        }
+  def get_dict(self):
+      return {
+      "parameters":self.kv_pairs
+      }
 
 
 
@@ -287,7 +302,7 @@ class PipeLineConfigDTO(Config):
 #################################################
 ######## Storage Service Data Structs ###########
 #################################################
-class PipeLineID(Config):
+class PipeLineIDforStorage(Config):
     def __init__(self, id:int) -> None:
         self.pipelineID = int(id)
     def get_dict(self):

@@ -287,8 +287,9 @@ from helpers import _url #this works
 import data_structs
 #from helpers import * #this doesn't work
 #from .helpers import * #this doesn't work
-
+#import urllib3
 import requests
+import json
 
 class AdapterAPI():
     def __init__(self) -> None:
@@ -301,7 +302,6 @@ class AdapterAPI():
             "preview":"preview",
             }
         
-
     def get_application_version(self):
         return requests.get(_url(self.BASE_URL, self.relative_paths["version"]))
 
@@ -319,11 +319,43 @@ class AdapterAPI():
     def execute_configured_preview(self, AdapterConfig:data_structs.AdapterConfig):
         #Note: AdapterConfig consists of both the protcol of data transfer and the format that it should be delivered in.
         #while the raw_preview needs only the protocol of data transfer
-        return requests.post(_url(self.BASE_URL, self.relative_paths["preview"]), json=AdapterConfig.get_json())
+        #headers = {'Content-Type': 'application/json'}#, "User-Agent": "vscode-restclient"}
+        # headers = {"User-Agent": "vscode-restclient",
+        # "Content-Type": "application/json",
+        # "accept-encoding": "gzip, deflate",
+        # "content-length": "279"}
+        #print(len(AdapterConfig.get_json().encode(encoding='UTF-8')))
+        #return requests.post(_url(self.BASE_URL, self.relative_paths["preview"]), headers=headers, data=AdapterConfig.get_json().encode(encoding='UTF-8'))
+        return requests.post(_url(self.BASE_URL, self.relative_paths["preview"]), json=AdapterConfig.get_dict())
 
     def execute_raw_preview(self, ProtocolConfig:data_structs.ProtocolConfig):
-        return requests.post(_url(self.BASE_URL, self.relative_paths["preview"]), json=ProtocolConfig.get_json())
+      #j ={'type': 'HTTP', 'parameters': {'location': 'https://www.bka.de/SharedDocs/Downloads/DE/Publikationen/PolizeilicheKriminalstatistik/2018/BKATabellen/FaelleLaenderKreiseStaedte/BKA-LKS-F-03-T01-Kreise_csv.csv?__blob=publicationFile&v=3','encoding': 'UTF-8'}}
 
+      # http = urllib3.PoolManager()
+      # r = http.request(
+      #     'POST',
+      #     _url(self.BASE_URL, self.relative_paths["preview"]),
+      #     body=str(j).encode('utf-8'),
+      #     headers={'Content-Type': 'application/json; charset=UTF-8'})
+      # ur = _url(self.BASE_URL, self.relative_paths["preview"])
+      #json = ProtocolConfig.get_dict()#.encode("UTF-8")
+      # headers = {'Content-Type': 'application/json'}
+      # sess = requests.Session()
+      # req = requests.Request('POST', ur, 
+      #                       headers=headers,
+      #                       data=j)
+      # preq = req.prepare()
+      # preq.headers = {key: value for key, value in preq.headers.items()
+      #                 if key in {'Content-Type', 'Cookie'}}
+      # r = sess.send(preq)
+      #return r
+      url = _url(self.BASE_URL, self.relative_paths["preview"], "raw")
+      headers = {'Content-Type': 'application/json'}
+      #j =b'{"type": "HTTP","parameters": {"location": "https://www.bka.de/SharedDocs/Downloads/DE/Publikationen/PolizeilicheKriminalstatistik/2018/BKATabellen/FaelleLaenderKreiseStaedte/BKA-LKS-F-03-T01-Kreise_csv.csv?__blob=publicationFile&v=3","encoding": "UTF-8"}}'
+      # with open('1.json','rb') as payload:
+      #   #j = json.load(payload)
+      #    return requests.post(url, headers=headers, data=payload.read())
+      return requests.post(url=url, headers=headers,json=ProtocolConfig.get_dict())#, headers={"Content-Type": "application/json"})#.replace('\\"',"\""))
 
 #Datasource API
 #As it has the same self.BASE_URL, I put it in the  same file.
@@ -361,22 +393,22 @@ class DatasourceAPI():
     return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID))
 
   def create_Datasource(self, DatasourceConfig:data_structs.DatasourceConfig):
-    return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"]), json=DatasourceConfig.get_json())
+    return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"]), json=DatasourceConfig.get_dict())
 
   def update_Datasource(self, DatasourceID, DatasourceConfig:data_structs.DatasourceConfig):
-    return requests.put(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID), json=DatasourceConfig.get_json())
+    return requests.put(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID), json=DatasourceConfig.get_dict())
 
   def delete_all_Datasources(self):
     return requests.delete(_url(self.BASE_URL, self.relative_paths["datasources"]))
   
-  def delete_Datasource(self, DatasourceID):
+  def delete_Datasource(self, DatasourceID:int):
     return requests.delete(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID))
 
   def trigger_DataImport_without_params(self, DatasourceID):
     return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "trigger"))
 
-  def trigger_DataImport_with_params(self, DatasourceID, Parameters:data_structs.Parameters):
-    return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "trigger"), json=Parameters.get_json())
+  def trigger_DataImport_with_params(self, DatasourceID, Parameters:data_structs.DataImportParameters):
+    return requests.post(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "trigger"), json=Parameters.get_dict())
 
   def get_All_Dataimports_of_Datasource(self, DatasourceID):
     return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "imports"))
@@ -399,6 +431,185 @@ class DatasourceAPI():
 # print(ada.get_supported_data_formats().text)
 
 #########################################
-####### Example Requests ################
+########## Example Requests #############
 #########################################
+"""
+############# AdapterAPI ################
 ada = AdapterAPI()
+
+### Get application version
+application_version = ada.get_supported_protocols()
+#print(application_version.text)
+
+### Get all supported protocols
+supported_protocols = ada.get_supported_protocols()
+#print(supported_protocols.text)
+
+### Get all supported data formats
+supported_data_formats = ada.get_supported_data_formats()
+#print(supported_data_formats.text)
+
+### Perform Data Import RAW
+protocol_config_params_raw = data_structs.ProtocolConfigParameters(location='https://www.bka.de/SharedDocs/Downloads/DE/Publikationen/PolizeilicheKriminalstatistik/2018/BKATabellen/FaelleLaenderKreiseStaedte/BKA-LKS-F-03-T01-Kreise_csv.csv?__blob=publicationFile&v=3',
+                                                                  encoding= 'UTF-8')
+protocol_config_raw = data_structs.ProtocolConfig(r'HTTP', protocol_config_params_raw)
+print(protocol_config_raw.get_json())
+raw_preview = ada.execute_raw_preview(protocol_config_raw)
+print(raw_preview.status_code)
+print(raw_preview.request.body)
+#print(raw_preview.request.content)
+print("here")
+
+### Perform Data Import JSON
+protocol_config_params_json = data_structs.ProtocolConfigParameters(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations.json",
+                                                                    encoding= "UTF-8")
+protocol_config_json = data_structs.ProtocolConfig("HTTP", protocol_config_params_json)
+format_config_json = data_structs.FormatConfig(type="JSON",
+                                              parameters={})
+json_configured_preview = ada.execute_configured_preview(data_structs.AdapterConfig(protocol_config_json, format_config_json))
+print(json_configured_preview.status_code)
+print(json_configured_preview.request.body)
+
+### Perform Data Import CSV
+protocol_config_params_csv = data_structs.ProtocolConfigParameters(location="https://www.bka.de/SharedDocs/Downloads/DE/Publikationen/PolizeilicheKriminalstatistik/2018/BKATabellen/FaelleLaenderKreiseStaedte/BKA-LKS-F-03-T01-Kreise_csv.csv?__blob=publicationFile&v=3",
+                                                                  encoding= "ISO-8859-1")
+protocol_config_csv = data_structs.ProtocolConfig("HTTP", protocol_config_params_csv)
+csv_params = data_structs.CSVparameters(";", "\n", False, True)
+format_config_csv = data_structs.FormatConfig(type="CSV",
+                                              parameters=csv_params)
+csv_configured_preview = ada.execute_configured_preview(data_structs.AdapterConfig(protocol_config_csv, format_config_csv))
+print(csv_configured_preview.text)
+
+
+############ DataSourceAPI ####################
+dsa = DatasourceAPI()
+
+### Get all datasources
+all_datasources_configs = dsa.get_all_DatasourceConfigs()
+print(all_datasources_configs.text)
+
+### Create a datasource
+ds_trigger_config = data_structs.DatasourceTriggerConfig(first_ex="2018-10-07T01:32:00.123Z",
+                                                          interval=60000,
+                                                          periodic=True)
+ds_metadata = data_structs.Metadata(author="icke",
+                                    display_name="pegelOnline",
+                                    license="none")
+ds_config = data_structs.DatasourceConfig(None, protocol_config_json, format_config_json, ds_trigger_config, ds_metadata) 
+create_datasource = dsa.create_Datasource(ds_config)
+print(create_datasource.text)
+
+### Delete all datasources
+#delete_all_ds = dsa.delete_all_Datasources()
+#print(delete_all_ds.text)
+
+#hypothetical_ds_ID = 1
+hypothetical_ds_ID = json.loads(create_datasource.content)["id"]
+
+# ### Delete datasource x
+# delete_ds_by_ID = dsa.delete_Datasource(hypothetical_ds_ID)
+# print(delete_ds_by_ID.text)
+
+### Update datasource x
+update_ds_trigger_config = data_structs.DatasourceTriggerConfig(first_ex="2018-10-07T01:32:00.123Z",
+                                                          interval=1000,
+                                                          periodic=True)
+update_ds_metadata = data_structs.Metadata(author="newauthor", license="AGPL3")
+update_ds_config =  data_structs.DatasourceConfig(None, protocol_config_json, format_config_json, update_ds_trigger_config, update_ds_metadata) 
+update_ds_by_ID = dsa.update_Datasource(hypothetical_ds_ID, update_ds_config)
+print(update_ds_by_ID.text)
+
+### Perform manual data import without runtime parameters
+dataimport_without_params = dsa.trigger_DataImport_without_params(hypothetical_ds_ID)
+print(dataimport_without_params.text)
+
+### Create datasource with dynamic parameters
+protocol_config_params_dynamic_ds = data_structs.ProtocolConfigParameters(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/{station}/W/measurements.json?start=P1D",
+                                                                      encoding= "UTF-8",
+                                                                      default_params=data_structs.KVpairs({"station": "BAMBERG"}))
+protocol_config_dynamic_ds = data_structs.ProtocolConfig("HTTP", protocol_config_params_dynamic_ds )
+ 
+ds_with_dynamic_params_trigger_config = data_structs.DatasourceTriggerConfig(first_ex="2018-10-07T01:32:00.123Z",
+                                                          interval=60000,
+                                                          periodic=False)
+ds_with_dynamic_params_dsconfig = data_structs.DatasourceConfig(None, protocol_config_dynamic_ds,
+                                                                format_config_json,
+                                                                ds_with_dynamic_params_trigger_config, 
+                                                                ds_metadata)
+create_ds_with_dynamic_params = dsa.create_Datasource(ds_with_dynamic_params_dsconfig)
+print(create_ds_with_dynamic_params.text)
+
+### Perform manual data import with runtime parameters
+dataimport_params = data_structs.DataImportParameters({"station": "BONN"})
+manual_dataimport_with_params = dsa.trigger_DataImport_with_params(hypothetical_ds_ID, dataimport_params)
+print(manual_dataimport_with_params.text)
+
+### List imports of a certain datasource
+ds_imports = dsa.get_All_Dataimports_of_Datasource(hypothetical_ds_ID)
+print(ds_imports.text)
+
+### Find latest import of a certain datasource
+ds_latest_import = dsa.get_latest_Dataimport_of_Datasource(hypothetical_ds_ID)
+print(ds_latest_import.text)
+
+### Fetch latest import data
+ds_data_of_latest_import = dsa.get_Data_of_latest_Dataimport_of_Datasource(hypothetical_ds_ID)
+print(ds_data_of_latest_import.text)
+
+### Look at data import metadata
+# should use the id from the trigger response
+hypothetical_dataImportId = json.loads(ds_latest_import.content)["id"]
+fetched_dataimport = dsa.get_Dataimport_of_Datasource(hypothetical_ds_ID, hypothetical_dataImportId)
+print(fetched_dataimport.text)
+
+### Fetch imported data
+data_of_fetched_dataimport = dsa.get_Data_of_Dataimport_of_Datasource(hypothetical_ds_ID, hypothetical_dataImportId)
+print(data_of_fetched_dataimport.text)
+
+######## cleaning up, or at least trying! #########
+
+### Delete datasource x
+delete_ds_by_ID = dsa.delete_Datasource(hypothetical_ds_ID)
+print(delete_ds_by_ID.text)
+
+## Delete all datasources
+delete_all_ds = dsa.delete_all_Datasources()
+print(delete_all_ds.text)
+"""
+
+dsa = DatasourceAPI()
+# protocol_config_params_json = data_structs.ProtocolConfigParameters(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations.json",
+#                                                                     encoding= "UTF-8")
+# protocol_config_json = data_structs.ProtocolConfig("HTTP", protocol_config_params_json)
+# format_config_json = data_structs.FormatConfig(type="JSON",
+#                                               parameters={})
+# ds_trigger_config = data_structs.DatasourceTriggerConfig(first_ex="2018-10-07T01:32:00.123Z",
+#                                                           interval=60000,
+#                                                           periodic=True)
+# ds_metadata = data_structs.Metadata(author="icke",
+#                                     display_name="pegelOnline",
+#                                     license="none")
+# ds_config = data_structs.DatasourceConfig(None, protocol_config_json, format_config_json, ds_trigger_config, ds_metadata) 
+# create_datasource = dsa.create_Datasource(ds_config)
+
+### Get all datasources
+all_datasources_configs = dsa.get_all_DatasourceConfigs()
+for ds in json.loads(all_datasources_configs.content):
+  #dsa.delete_Datasource(ds["id"])
+  try:
+    print(ds["id"])
+    dsa.delete_Datasource(ds["id"])
+  except:
+    print("Not there")
+  
+#delete_all_ds = dsa.delete_all_Datasources()
+
+all_datasources_configs = dsa.get_all_DatasourceConfigs()
+for ds in json.loads(all_datasources_configs.content):
+  
+  try:
+    print(ds["id"])
+  except:
+    print("Not there")
+
+print("done")
