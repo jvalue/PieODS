@@ -338,10 +338,8 @@ class WebhookNotificationParameter(Config):
         self.url = url
     def get_dict(self):
         return {
-            "parameter":{
                 "url":self.url
-            }
-        }
+              }
 
 class SlackNotificationParameter(Config):
     def __init__(self, workspaceId:str, channelId:str, secret:str) -> None:
@@ -350,12 +348,10 @@ class SlackNotificationParameter(Config):
         self.secret = secret
     def get_dict(self):
         return {
-            "parameter":{
                 "workspaceId":self.workspace_ID,
                 "channelId":self.channel_ID,
                 "secret":self.secret
-            }
-        }
+              }
 
 class FirebaseNotificationParameter(Config):
     def __init__(self, projectId:str, clientEmail:str, privateKey:str, topic:str) -> None:
@@ -365,13 +361,11 @@ class FirebaseNotificationParameter(Config):
         self.topic = topic
     def get_dict(self):
         return {
-            "parameter":{
                 "projectId":self.project_ID,
                 "clientEmail":self.client_email,
                 "privateKey":self.private_key,
                 "topic":self.topic
-            }
-        }
+              }
 
 class NotificationWriteModel(Config):
     def __init__(self, pipelineId:int, condition:str,

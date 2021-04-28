@@ -148,88 +148,115 @@ class NotificationAPI():
 #########################################
 ####### Example Requests ################
 #########################################
-nt = NotificationAPI()
 
-### Get version
-version_request = nt.get_service_version()
+# ## creating fresh datasources and pipelines to get ids from
+# import Adapter
+# import Pipeline
+# import json
 
-### Get all notification configs
-all_notification_configs = nt.get_all_notificationConfigs()
+# #creating a datasource
+# dsa = Adapter.DatasourceAPI()
+# protocol_config_params_json = data_structs.ProtocolConfigParameters(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations.json",
+#                                                                     encoding= "UTF-8")
+# protocol_config_json = data_structs.ProtocolConfig("HTTP", protocol_config_params_json)
+# format_config_json = data_structs.FormatConfig(type="JSON",
+#                                               parameters={})
+# ds_trigger_config = data_structs.DatasourceTriggerConfig(first_ex="2018-10-07T01:32:00.123Z",
+#                                                           interval=60000,
+#                                                           periodic=True)
+# ds_metadata = data_structs.Metadata(author="icke",
+#                                     display_name="pegelOnline",
+#                                     license="none")
+# ds_config = data_structs.DatasourceConfig(None, protocol_config_json, format_config_json, ds_trigger_config, ds_metadata) 
+# create_datasource = dsa.create_Datasource(ds_config)
+# ds_id = json.loads(create_datasource.content)["id"]
 
-### Get all notification configs for pipeline
-notification_configs_by_pipelineID  = nt.get_pipeline_notificationConfigs(pl_id)
-
-### Save notification webhook config
-nt.create_notificationConfig(data_structs.NotificationWriteModel(
-                                pl_id,
-                                True,
-                                "WBHOOK",
-                                data_structs.WebhookNotificationParameter("http://www.mocky.io/v2/5dc94f7a2f0000680073eb96")
-                                )
-                            )
-
-### Save notification firebase config
-POST {{baseURL}}/configs  HTTP/1.1
-Content-Type: application/json
-
-{
-  "pipelineId": 17,
-  "condition": "true",
-  "type": "FCM",
-  "parameter": {
-    "projectId": "projectId",
-    "clientEmail": "clientEmail",
-    "privateKey": "privateKey",
-    "topic": "topic"
-  }
-}
-
-### Save notification slack config
-POST {{baseURL}}/configs  HTTP/1.1
-Content-Type: application/json
-
-{
-  "pipelineId": 17,
-  "condition": "true",
-  "type": "SLACK",
-  "parameter": {
-    "workspaceId": "workspaceId",
-    "channelId": "channelId",
-    "secret": "secret"
-  }
-}
-
-### Get notification config
-GET {{baseURL}}/configs/1  HTTP/1.1
-Content-Type: application/json
-
-### Edit notification config
-PUT {{baseURL}}/configs/1  HTTP/1.1
-Content-Type: application/json
+# #creating a pipeline
+# pl = Pipeline.PipelineAPI()
+# pl_config_DTO = data_structs.PipeLineConfigDTO(ds_id,
+#                                               data_structs.Transformation("data.test = 'abc'; return data;"),
+#                                               data_structs.Metadata(author="icke",
+#                                                                     license= "none",
+#                                                                     display_name= "exampleRequest",
+#                                                                     description="none"
+#                                                                     )
+#                                               )
+# created_pipeline = pl.create_pipeline_config(pl_config_DTO)
+# pl_id = json.loads(created_pipeline.content)["id"]
 
 
-{
-  "pipelineId": 18,
-  "condition": "true",
-  "type": "WEBHOOK",
-  "parameter": {
-    "url": "http://www.mocky.io/v2/5dc94f7a2f0000680073eb96"
-  }
-}
+
+# nt = NotificationAPI()
+# ### Get version
+# version_request = nt.get_service_version()
+
+# ### Get all notification configs
+# all_notification_configs = nt.get_all_notificationConfigs()
+
+# ### Get all notification configs for pipeline
+# notification_configs_by_pipelineID  = nt.get_pipeline_notificationConfigs(pl_id)
+
+# ### Save notification webhook config
+# web_hook_nt=nt.create_notificationConfig(data_structs.NotificationWriteModel(
+#                                             pl_id,
+#                                             True,
+#                                             "WEBHOOK",
+#                                             data_structs.WebhookNotificationParameter("http://www.mocky.io/v2/5dc94f7a2f0000680073eb96")
+#                                             )
+#                                         )
+# nt_config_id = json.loads(web_hook_nt.content)["id"]
+
+# ### Save notification firebase config
+# ### needs to have the below entries at hand
+# # firebase_nt=nt.create_notificationConfig(data_structs.NotificationWriteModel(pl_id,
+# #                                                                             True,
+# #                                                                             "FCM",
+# #                                                                             data_structs.FirebaseNotificationParameter(
+# #                                                                                 projectId= None,
+# #                                                                                 clientEmail=None,
+# #                                                                                 privateKey=None,
+# #                                                                                 topic=None
+# #                                                                                 )
+# #                                                                             )
+# #                                         )
+
+# ### Save notification slack config
+# slack_nt = nt.create_notificationConfig(data_structs.NotificationWriteModel(pl_id,
+#                                                                             True,
+#                                                                             "SLACK",
+#                                                                             data_structs.SlackNotificationParameter(
+#                                                                                 "T01U3SL56Q7",
+#                                                                                 "B020AN6JCBU",
+#                                                                                 "IY7hbRJ8idzfnsSdcpIhX1Px"
+#                                                                                 )
+#                                                                             )
+#                                         )
+
+# ### Get notification config
+# retreived_nt = nt.get_notificationConfig(nt_config_id)
+
+# ### Edit notification config
+# updated_nt = nt.update_notificationConfig(nt_config_id, data_structs.NotificationWriteModel(
+#                                             pl_id, #should be different, but I am tired at the moment
+#                                             True,
+#                                             "WEBHOOK",
+#                                             data_structs.WebhookNotificationParameter("http://www.mocky.io/v2/5dc94f7a2f0000680073eb96")
+#                                             )
+#                                         )
+
+# ### Trigger all notifications of pipeline
+# triggered_all_notifications = nt.trigger_all_notifications(data_structs.NotificationTriggerConfig(pl_id,
+#                                                                                                 "Integration-Test Pipeline 2 (not triggering)",
+#                                                                                                 data_structs.KVpairs({"value1":1})
+#                                                                                                 )
+#                                                             )
 
 
-### Delete notification config
-DELETE {{baseURL}}/configs/1  HTTP/1.1
-Content-Type: application/json
-
-### Trigger all notifications of pipeline
-POST {{baseURL}}/trigger  HTTP/1.1
-Content-Type: application/json
-
-{
-  "pipelineId": 17,
-  "pipelineName": "Integration-Test Pipeline 2 (not triggering)",
-  "data": {
-    "value1": 1
-  }
-}
+# ### Delete notification config
+# delted_nt = nt.delete_notificationConfig(nt_config_id)
+# # # import json
+# # # nt = NotificationAPI()
+# # # ### Get all notification configs
+# # # all_notification_configs = nt.get_all_notificationConfigs()
+# # # for ntcfg in json.loads(all_notification_configs.content):
+# # #     nt.delete_notificationConfig(ntcfg["id"])
