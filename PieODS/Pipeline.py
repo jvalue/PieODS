@@ -309,7 +309,7 @@ class PipelineAPI:
       """
       return requests.delete(_url(self.BASE_URL, self.relative_paths["configs"], PipelineID))
 
-
+"""
 #########################################
 ########## Example Requests #############
 #########################################
@@ -317,15 +317,17 @@ class PipelineAPI:
 ############# PipelineAPI ################
 
 pl = PipelineAPI()
-
+import json
 ### Get all pipelines
 all_pipelines = pl.get_all_pipeline_configs()
 print(all_pipelines.status_code)
+print(json.loads(all_pipelines.content))
+
 
 ### Create a pipeline
 #creating a datasource for the pipeline
 import Adapter
-import json
+
 dsa = Adapter.DatasourceAPI()
 protocol_config_params_json = data_structs.ProtocolConfigParameters(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations.json",
                                                                     encoding= "UTF-8")
@@ -346,24 +348,47 @@ pl_config_DTO = data_structs.PipeLineConfigDTO(ds_id,
                                               data_structs.Transformation("data.test = 'abc'; return data;"),
                                               data_structs.Metadata(author="icke",
                                                                     license= "none",
-                                                                    display_name= "exampleRequest"
+                                                                    display_name= "exampleRequest",
+                                                                    description="none"
                                                                     )
                                               )
 created_pipeline = pl.create_pipeline_config(pl_config_DTO)
+#print(pl_config_DTO.get_json())
 pl_id = json.loads(created_pipeline.content)["id"]
 
+all_pipelines = pl.get_all_pipeline_configs()
+print(all_pipelines.status_code)
+print(json.loads(all_pipelines.content))
 
 ### Get pipeline x
 retreived_pl = pl.get_pipeline_config_by_ID(pl_id)
 
 ### Update a pipeline
 updated_pl_config_DTO = pl_config_DTO
-updated_pl_config_DTO.meta_data.display_name = None
+updated_pl_config_DTO.meta_data.display_name = "none"
 
 updated_pipeline = pl.update_pipeline_config(pl_id,updated_pl_config_DTO)
 
-###delete a pipeline
-delete_pl = pl.delete_pipeline_config_by_ID(pl_id)
+all_pipelines = pl.get_all_pipeline_configs()
+print(all_pipelines.status_code)
+print(json.loads(all_pipelines.content))
 
+###delete a pipeline
+##delete_pl = pl.delete_pipeline_config_by_ID(pl_id)
+# all_pipelines = pl.get_all_pipeline_configs()
+# print(all_pipelines.status_code)
+# print(json.loads(all_pipelines.content))
 ### Delete all pipelines
 deleted_all = pl.delete_all_pipeline_configs()
+
+all_pipelines = pl.get_all_pipeline_configs()
+print(all_pipelines.status_code)
+print(json.loads(all_pipelines.content))
+
+##clean up
+cleaned = dsa.delete_Datasource(ds_id)
+# all_pipelines = pl.get_all_pipeline_configs()
+# print(json.loads(all_pipelines.content))
+
+print("Cleaned successfully" if cleaned.status_code<400 else "Failed to clean up. Do it manually!")
+"""

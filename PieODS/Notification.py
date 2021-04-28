@@ -124,7 +124,7 @@ class NotificationAPI():
         return requests.get(_url(self.BASE_URL, self.relative_paths["version"]))
 
     def create_notificationConfig(self, NotificationWriteModel:data_structs.NotificationWriteModel):
-        return requests.get(_url(self.BASE_URL, self.relative_paths["configs"]), json=NotificationWriteModel.get_json())
+        return requests.post(_url(self.BASE_URL, self.relative_paths["configs"]), json=NotificationWriteModel.get_dict())
 
     def get_all_notificationConfigs(self):
         return requests.get(_url(self.BASE_URL, self.relative_paths["configs"]))
@@ -135,19 +135,101 @@ class NotificationAPI():
     def get_notificationConfig(self, NotificationConfigID:int):
         return requests.get(_url(self.BASE_URL, self.relative_paths["configs"], NotificationConfigID))
 
-    def get_notificationConfig(self, NotificationConfigID:int):
-        return requests.get(_url(self.BASE_URL, self.relative_paths["configs"], NotificationConfigID))
-
-    def update_notificationConfig(self, NotificationConfigID:int, NotificationWriteModel:data_structs.NotificationWriteModel)):
-        return requests.put(_url(self.BASE_URL, self.relative_paths["configs"], NotificationConfigID), json=NotificationWriteModel.get_json())
+    def update_notificationConfig(self, NotificationConfigID:int, NotificationWriteModel:data_structs.NotificationWriteModel):
+        return requests.put(_url(self.BASE_URL, self.relative_paths["configs"], NotificationConfigID), json=NotificationWriteModel.get_dict())
 
     def delete_notificationConfig(self, NotificationConfigID:int):
         return requests.delete(_url(self.BASE_URL, self.relative_paths["configs"], NotificationConfigID))
 
     def trigger_all_notifications(self, TriggerConfig:data_structs.NotificationTriggerConfig):
-        return requests.put(_url(self.BASE_URL, self.relative_paths["trigger"]), json=TriggerConfig.get_json())
+        return requests.post(_url(self.BASE_URL, self.relative_paths["trigger"]), json=TriggerConfig.get_dict())
 
 
 #########################################
 ####### Example Requests ################
 #########################################
+nt = NotificationAPI()
+
+### Get version
+version_request = nt.get_service_version()
+
+### Get all notification configs
+all_notification_configs = nt.get_all_notificationConfigs()
+
+### Get all notification configs for pipeline
+notification_configs_by_pipelineID  = nt.get_pipeline_notificationConfigs(pl_id)
+
+### Save notification webhook config
+nt.create_notificationConfig(data_structs.NotificationWriteModel(
+                                pl_id,
+                                True,
+                                "WBHOOK",
+                                data_structs.WebhookNotificationParameter("http://www.mocky.io/v2/5dc94f7a2f0000680073eb96")
+                                )
+                            )
+
+### Save notification firebase config
+POST {{baseURL}}/configs  HTTP/1.1
+Content-Type: application/json
+
+{
+  "pipelineId": 17,
+  "condition": "true",
+  "type": "FCM",
+  "parameter": {
+    "projectId": "projectId",
+    "clientEmail": "clientEmail",
+    "privateKey": "privateKey",
+    "topic": "topic"
+  }
+}
+
+### Save notification slack config
+POST {{baseURL}}/configs  HTTP/1.1
+Content-Type: application/json
+
+{
+  "pipelineId": 17,
+  "condition": "true",
+  "type": "SLACK",
+  "parameter": {
+    "workspaceId": "workspaceId",
+    "channelId": "channelId",
+    "secret": "secret"
+  }
+}
+
+### Get notification config
+GET {{baseURL}}/configs/1  HTTP/1.1
+Content-Type: application/json
+
+### Edit notification config
+PUT {{baseURL}}/configs/1  HTTP/1.1
+Content-Type: application/json
+
+
+{
+  "pipelineId": 18,
+  "condition": "true",
+  "type": "WEBHOOK",
+  "parameter": {
+    "url": "http://www.mocky.io/v2/5dc94f7a2f0000680073eb96"
+  }
+}
+
+
+### Delete notification config
+DELETE {{baseURL}}/configs/1  HTTP/1.1
+Content-Type: application/json
+
+### Trigger all notifications of pipeline
+POST {{baseURL}}/trigger  HTTP/1.1
+Content-Type: application/json
+
+{
+  "pipelineId": 17,
+  "pipelineName": "Integration-Test Pipeline 2 (not triggering)",
+  "data": {
+    "value1": 1
+  }
+}

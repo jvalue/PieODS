@@ -304,7 +304,7 @@ class PipeLineConfigDTO(Config):
 #################################################
 class PipeLineIDforStorage(Config):
     def __init__(self, id:int) -> None:
-        self.pipelineID = int(id)
+        self.pipelineID = str(id)
     def get_dict(self):
         return {
             "pipelineid": self.pipelineID
