@@ -31,7 +31,7 @@ When nothing is changed *base_url* is `http://localhost/3000`
 
 """
 import requests
-from helpers import _url, Config #this works
+from .helpers import _url, Config #this works
 
 
 #################################################

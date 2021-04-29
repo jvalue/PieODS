@@ -284,7 +284,7 @@ DataImport
 
 """
 import requests
-from helpers import _url, Config, KVpairs, Metadata, Unsupported_by_ODS #this works
+from .helpers import _url, Config, KVpairs, Metadata, Unsupported_by_ODS #this works
 from typing import Union
 
 #### Data Structs ########

@@ -208,7 +208,7 @@ PipelineConfigDTO:
 }
 """
 import requests
-from helpers import _url, Config, KVpairs, Metadata
+from .helpers import _url, Config, KVpairs, Metadata
 
 #################################################
 ######## Pipeline Service Data Structs ##########

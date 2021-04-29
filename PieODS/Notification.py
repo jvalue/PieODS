@@ -104,7 +104,7 @@ Equal to `NotificationWriteModel`, but has an additional `id: number` field.
 """
 
 import requests
-from helpers import _url, Config, KVpairs
+from .helpers import _url, Config, KVpairs
 from typing import Union, Literal
 
 #################################################
