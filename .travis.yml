@@ -22,7 +22,7 @@ deploy:
   distributions: sdist bdist_wheel
   user: Shady-Hegazy
   password:
-    secure: PLEASE_REPLACE_ME
+    secure: C49bfU1tLgJ+wqUIn5WYFLzRhnzLFQemwdRN+ziQlLjRCSA2Y3YFJMXYQQ1If4fhmCeEEztHpLzjycucT+YG6MFfGhdylFON9DFvYUjhE4T/nVPeYDYck97e/QGIuY/fpJKQC0lJnE9fI7vklU2doZnMhZ29/FC+0YVzBaJMJuFIWVOniThUQ8oQjzwHF85PYuC4WVodeHcgHU1epzAjvIdJ4gx6vT4Os2dZQC7IDwybVFypSwuCe+uOX16ikZb3N/jB7xIm8g0n9RvSENxpSznZcuShQcFB9/vQZWLhXyE7ROCkzgUQLy9Wi1GIFBC3MUiESdlXFNsR9eP8NaeSiHNj0Dfp2Zy4ly1GIaGLfYVaaZttt+VogsHoAuCjq3Fc5sDnf1tjTf/aOW/xrG6s4MI3133Bplp3ejGelohWze3Llh4gD9cXOlMJPtENQWHzHvv7rvfNfn7rcMMAPK/0K6Ocdr1dT/77m4XfLOtxKSUiZeGLp6XgtvswMvxyR5byFRAC9+XX3H/VwPGZDf1K5aRAp7tXtXW41hdjZZdQ0qPPsEjZ/Mn5BLYyX1KdxHTq6+YHRruMniHILx0ar4jFAArQABL/4xcugOJk06lTwfP3GL3OZk3zOrE+/Ydg4VhOdcqE0+g7+6qS2w2tYNJ/XTyLUhanVjeURNZnj/TKLcY=
   on:
     tags: true
     repo: Shady-Hegazy/PieODS
