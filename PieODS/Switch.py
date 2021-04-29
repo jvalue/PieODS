@@ -1,10 +1,7 @@
-# import docker
-# from docker.auth import AuthConfig
 import requests
-#from .helpers import _url
-#import .helpers
-
 import os
+from .helpers import _url
+
 def _url(r, *path_components):
     for c in path_components:
         r += "/{}".format(str(c)) 
