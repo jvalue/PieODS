@@ -208,10 +208,63 @@ PipelineConfigDTO:
 }
 """
 import requests
-from helpers import _url
-#from .helpers import *
+from helpers import _url, Config, KVpairs, Metadata
 
-import data_structs
+#################################################
+######## Pipeline Service Data Structs ##########
+#################################################
+
+class PipelineExecutionRequest(Config):
+    def __init__(self, data:KVpairs, func:str) -> None:
+        self.data = data 
+        self.func = func 
+    def get_dict(self):
+        return {
+            "data": self.data.get_dict(), #KVpairs, pass key:value pairs to the init method of class KVpairs
+            "func": self.func #string [VALID JS CODE]
+            }
+
+class PipelineConfigTriggerRequest(Config):
+    def __init__(self, datasourceid: int, data:KVpairs) -> None:
+        self.data_source_ID = int(datasourceid)
+        self.data = data #KVpairs
+    def get_dict(self):
+        return {
+            "datasourceId": self.data_source_ID,
+            "data":self.data.get_dict() #KVpairs
+        }
+
+class Transformation(Config):
+    def __init__(self, func:str) -> None:
+        self.func = str(func)
+    def get_dict(self):
+        return {"func":self.func}
+
+class PipeLineConfig(Config):
+    def __init__(self, id:int, datasourceid:int, transformation:Transformation, metadata:Metadata) -> None:
+        self.id = int(id)
+        self.data_source_ID = int(datasourceid)
+        self.transformation = transformation
+        self.meta_data = metadata
+    def get_dict(self):
+        return {
+            "id":self.id,
+            "datasourceId":self.data_source_ID,
+            "transformation":self.transformation.get_dict(),
+            "metadata":self.meta_data.get_dict()
+        }
+
+class PipeLineConfigDTO(Config):
+    def __init__(self, datasourceid:int, transformation:Transformation, metadata:Metadata) -> None:
+        self.data_source_ID = int(datasourceid)
+        self.transformation = transformation
+        self.meta_data = metadata #without creationTimestamp
+    def get_dict(self):
+        return {
+            "datasourceId":self.data_source_ID,
+            "transformation":self.transformation.get_dict(),
+            "metadata":self.meta_data.get_dict()
+        }
 
 
 class PipelineAPI:
@@ -233,7 +286,7 @@ class PipelineAPI:
       return requests.get(_url(self.BASE_URL, self.relative_paths["version"]))
 
   #assuming body is always json
-  def execute_pipeline(self, PipelineExecutionRequest:data_structs.PipelineExecutionRequest):
+  def execute_pipeline(self, PipelineExecutionRequest:PipelineExecutionRequest):
       """Executes the pipeline
 
       Parameters
@@ -258,7 +311,7 @@ class PipelineAPI:
       """
       return requests.post(_url(self.BASE_URL, self.relative_paths["job"]), json=PipelineExecutionRequest.get_dict())
 
-  def trigger_pipeline(self, PipelineConfigTriggerRequest:data_structs.PipelineConfigTriggerRequest):
+  def trigger_pipeline(self, PipelineConfigTriggerRequest:PipelineConfigTriggerRequest):
       """Triggers the pipeline
 
       Parameters
@@ -278,7 +331,7 @@ class PipelineAPI:
       """
       return requests.get(_url(self.BASE_URL, self.relative_paths["configs"], PipelineID))
 
-  def create_pipeline_config(self, PipelineconfigDTO:data_structs.PipeLineConfigDTO):
+  def create_pipeline_config(self, PipelineconfigDTO:PipeLineConfigDTO):
     """Create a pipeline config
 
     :param PipelineconfigDTO: identifier of a pipeline config
@@ -288,7 +341,7 @@ class PipelineAPI:
     """  ""
     return requests.post(_url(self.BASE_URL, self.relative_paths["configs"]), json=PipelineconfigDTO.get_dict())
 
-  def update_pipeline_config(self, PipelineID:int, PipelineconfigDTO:data_structs.PipeLineConfigDTO):
+  def update_pipeline_config(self, PipelineID:int, PipelineconfigDTO:PipeLineConfigDTO):
     """Update a pipeline config.
 
     :param PipelineconfigDTO: [description]
@@ -329,24 +382,24 @@ print(json.loads(all_pipelines.content))
 import Adapter
 
 dsa = Adapter.DatasourceAPI()
-protocol_config_params_json = data_structs.ProtocolConfigParameters(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations.json",
+protocol_config_params_json = ProtocolConfigParameters(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations.json",
                                                                     encoding= "UTF-8")
-protocol_config_json = data_structs.ProtocolConfig("HTTP", protocol_config_params_json)
-format_config_json = data_structs.FormatConfig(type="JSON",
+protocol_config_json = ProtocolConfig("HTTP", protocol_config_params_json)
+format_config_json = FormatConfig(type="JSON",
                                               parameters={})
-ds_trigger_config = data_structs.DatasourceTriggerConfig(first_ex="2018-10-07T01:32:00.123Z",
+ds_trigger_config = DatasourceTriggerConfig(first_ex="2018-10-07T01:32:00.123Z",
                                                           interval=60000,
                                                           periodic=True)
-ds_metadata = data_structs.Metadata(author="icke",
+ds_metadata = Metadata(author="icke",
                                     display_name="pegelOnline",
                                     license="none")
-ds_config = data_structs.DatasourceConfig(None, protocol_config_json, format_config_json, ds_trigger_config, ds_metadata) 
+ds_config = DatasourceConfig(None, protocol_config_json, format_config_json, ds_trigger_config, ds_metadata) 
 create_datasource = dsa.create_Datasource(ds_config)
 ds_id = json.loads(create_datasource.content)["id"]
 
-pl_config_DTO = data_structs.PipeLineConfigDTO(ds_id,
-                                              data_structs.Transformation("data.test = 'abc'; return data;"),
-                                              data_structs.Metadata(author="icke",
+pl_config_DTO = PipeLineConfigDTO(ds_id,
+                                              Transformation("data.test = 'abc'; return data;"),
+                                              Metadata(author="icke",
                                                                     license= "none",
                                                                     display_name= "exampleRequest",
                                                                     description="none"
