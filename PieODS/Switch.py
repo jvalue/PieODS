@@ -46,11 +46,7 @@ def write_file_from_repo(repo_file, file_name, destination_dir=None):
         f.write(repo_file.content)
     return final_path
 
-# required_files = ["docker-compose.yml", ".env"]
 
-# for file in required_files:
-#     write_file_from_repo(get_file_from_repo(file), file, "C:\Work\ODS\Docker")
-#print(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"))
 import subprocess
 subprocess.run(["docker-compose", "up"], cwd=os.path.join(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"), "open-data-service-main"))
 #subprocess.run(["docker-compose", "up"], cwd="C:\Work\ODS\Docker")
@@ -72,4 +68,9 @@ subprocess.run(["docker-compose", "up"], cwd=os.path.join(extract_repo_zip( writ
 #     client.containers.run(im)
 
 #def first_start():
+# required_files = ["docker-compose.yml", ".env"]
+
+# for file in required_files:
+#     write_file_from_repo(get_file_from_repo(file), file, "C:\Work\ODS\Docker")
+#print(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"))
     
