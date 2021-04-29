@@ -578,7 +578,7 @@ class DatasourceAPI():
           }
   def get_all_DatasourceConfigs(self):
     """Gets all DatasourceConfigs.
-    Examples of a DatasourceConfig is:
+    Example of a DatasourceConfig is:
       {
       "id": Number,
       "protocol": ProtocolConfig,
@@ -629,9 +629,9 @@ class DatasourceAPI():
     return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "imports", "latest", "data"))
 
 
-# ada = AdapterAPI()
-# print(ada.get_supported_protocols().text)
-# print(ada.get_supported_data_formats().text)
+ada = AdapterAPI()
+print(ada.get_supported_protocols().text)
+print(ada.get_supported_data_formats().text)
 # protocol_config_params_raw = ProtocolConfigParameters(location='https://www.bka.de/SharedDocs/Downloads/DE/Publikationen/PolizeilicheKriminalstatistik/2018/BKATabellen/FaelleLaenderKreiseStaedte/BKA-LKS-F-03-T01-Kreise_csv.csv?__blob=publicationFile&v=3',
 #                                                                   encoding= 'UTF-8')
 # protocol_config_raw = ProtocolConfig(r'HTTP', protocol_config_params_raw)
@@ -645,7 +645,7 @@ class DatasourceAPI():
 ada = AdapterAPI()
 
 ### Get application version
-application_version = ada.get_supported_protocols()
+application_version = ada.get_application_version()
 #print(application_version.text)
 
 ### Get all supported protocols
@@ -664,8 +664,7 @@ print(protocol_config_raw.get_json())
 raw_preview = ada.execute_raw_preview(protocol_config_raw)
 print(raw_preview.status_code)
 print(raw_preview.request.body)
-#print(raw_preview.request.content)
-print("here")
+
 
 ### Perform Data Import JSON
 protocol_config_params_json = ProtocolConfigParameters(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations.json",
