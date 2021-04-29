@@ -1,5 +1,5 @@
-import docker
-from docker.auth import AuthConfig
+# import docker
+# from docker.auth import AuthConfig
 import requests
 #from .helpers import _url
 #import .helpers
