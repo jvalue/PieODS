@@ -1,54 +1,26 @@
-import requests
+#import requests
 import os
-from .helpers import _url
-
-def _url(r, *path_components):
-    for c in path_components:
-        r += "/{}".format(str(c)) 
-    return r
-
-def get_repo_zip(repo_owner="jvalue", repo_name="open-data-service", branch="main"):
-    return requests.get('https://github.com/{}/{}/archive/{}.zip'.format(repo_owner, repo_name, branch))
-
-def write_repo_zip(repo_zip, repo_name="open-data-service", destination_dir=None):
-
-    #final_path = os.path.join(os.getcwd(), 'repo.zip')
-    if destination_dir==None:
-        destination_dir=os.getcwd()
-
-    final_path = os.path.join(destination_dir, '{}.zip'.format(repo_name))
-
-    with open(final_path, 'wb') as f:
-        f.write(repo_zip.content)
-    return final_path
-
-import zipfile
-
-def extract_repo_zip(path_to_zip_file, directory_to_extract_to):
-    with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
-        zip_ref.extractall(directory_to_extract_to)
-    return directory_to_extract_to
-
-def get_file_from_repo(file_name, repo_owner="jvalue", repo_name="open-data-service", branch="main", folder_name=None):
-    return requests.get(_url('https://raw.githubusercontent.com',
-                            repo_owner, repo_name, branch,
-                            _url(folder_name, file_name) if folder_name!=None else file_name)
-                        )
-
-
-def write_file_from_repo(repo_file, file_name, destination_dir=None):
-    if destination_dir==None:
-        destination_dir=os.getcwd()
-
-    final_path = os.path.join(destination_dir, file_name)
-
-    with open(final_path, 'wb') as f:
-        f.write(repo_file.content)
-    return final_path
-
-
+from .helpers import extract_repo_zip, write_repo_zip, get_repo_zip
+#import zipfile
 import subprocess
-subprocess.run(["docker-compose", "up"], cwd=os.path.join(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"), "open-data-service-main"))
+
+#class ODS():
+
+
+
+def run_ODS_instance():
+    subprocess.run(["docker-compose", "up"], cwd=os.path.join(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"), "open-data-service-main"))
+
+def stop_ODS_instance():
+    subprocess.run(["docker-compose", "stop"], cwd=os.path.join(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"), "open-data-service-main"))
+
+def shut_down_ODS_instance():
+    subprocess.run(["docker-compose", "down"], cwd=os.path.join(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"), "open-data-service-main"))
+
+def rerun_ODS_instance():
+    #subprocess.run(["docker-compose", "up --no-recreate"], cwd=os.path.join(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"), "open-data-service-main"))
+    subprocess.run(["docker-compose", "start"], cwd=os.path.join(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"), "open-data-service-main"))
+ 
 #subprocess.run(["docker-compose", "up"], cwd="C:\Work\ODS\Docker")
 
 

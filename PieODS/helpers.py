@@ -1,5 +1,8 @@
 import datetime
 import json
+import requests
+import zipfile
+import os
 
 def _url(r, *path_components):
     for c in path_components:
@@ -57,3 +60,40 @@ class Metadata(Config):
       "creationTimestamp": self.creation_timestamp
       }
     return {k: v for k, v in to_be_returned.items() if v is not None}
+
+def get_repo_zip(repo_owner="jvalue", repo_name="open-data-service", branch="main"): #semi-hard coded
+    return requests.get('https://github.com/{}/{}/archive/{}.zip'.format(repo_owner, repo_name, branch)) #depends on Github resources API design
+
+def write_repo_zip(repo_zip, repo_name="open-data-service", destination_dir=None):
+    #final_path = os.path.join(os.getcwd(), 'repo.zip')
+    if destination_dir==None:
+        destination_dir=os.getcwd()
+
+    final_path = os.path.join(destination_dir, '{}.zip'.format(repo_name))
+
+    with open(final_path, 'wb') as f:
+        f.write(repo_zip.content)
+    return final_path
+
+
+def extract_repo_zip(path_to_zip_file=None, directory_to_extract_to=None):
+    with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
+        zip_ref.extractall(directory_to_extract_to)
+    return directory_to_extract_to
+
+#can be used for the demo!
+def get_file_from_repo(file_name, repo_owner="jvalue", repo_name="open-data-service", branch="main", folder_name=None):
+    return requests.get(_url('https://raw.githubusercontent.com',
+                            repo_owner, repo_name, branch,
+                            _url(folder_name, file_name) if folder_name!=None else file_name)
+                        )
+
+def write_file_from_repo(repo_file, file_name, destination_dir=None):
+    if destination_dir==None:
+        destination_dir=os.getcwd()
+
+    final_path = os.path.join(destination_dir, file_name)
+
+    with open(final_path, 'wb') as f:
+        f.write(repo_file.content)
+    return final_path
