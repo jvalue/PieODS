@@ -1,11 +1,24 @@
 #import requests
 import os
-from .helpers import extract_repo_zip, write_repo_zip, get_repo_zip
+from helpers import extract_repo_zip_2, write_repo_zip, get_repo_zip
 #import zipfile
 import subprocess
 
-#class ODS():
+class ODSclient():
+    def __init__(self, path=None, initialized=False ) -> None:
+        self.initialized =  initialized
+        self.github_repo_name = "open-data-service"
+        self.github_repo_owner = "jvalue"
+        self.github_branch = "main"
+        self.repo_clone_path = path
+    def start(self):
+        if not self.initialized:
+            repo_response = get_repo_zip(repo_name=self.github_repo_name, repo_owner=self.github_repo_owner, branch=self.github_branch)
+            if repo_response.status_code < 400:
+                self.repo_clone_path = extract_repo_zip_2(repo_response, self.repo_clone_path)
 
+d = ODSclient()      
+d.start()    
 
 
 def run_ODS_instance():
@@ -17,9 +30,9 @@ def stop_ODS_instance():
 def shut_down_ODS_instance():
     subprocess.run(["docker-compose", "down"], cwd=os.path.join(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"), "open-data-service-main"))
 
-def rerun_ODS_instance():
-    #subprocess.run(["docker-compose", "up --no-recreate"], cwd=os.path.join(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"), "open-data-service-main"))
-    subprocess.run(["docker-compose", "start"], cwd=os.path.join(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"), "open-data-service-main"))
+# def rerun_ODS_instance():
+#     #subprocess.run(["docker-compose", "up --no-recreate"], cwd=os.path.join(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"), "open-data-service-main"))
+#     subprocess.run(["docker-compose", "start"], cwd=os.path.join(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"), "open-data-service-main"))
  
 #subprocess.run(["docker-compose", "up"], cwd="C:\Work\ODS\Docker")
 
@@ -45,4 +58,5 @@ def rerun_ODS_instance():
 # for file in required_files:
 #     write_file_from_repo(get_file_from_repo(file), file, "C:\Work\ODS\Docker")
 #print(extract_repo_zip( write_repo_zip(get_repo_zip()), "C:\Work\ODS\Docker"))
-    
+# d = shut_down_ODS_instance()
+# print("h")

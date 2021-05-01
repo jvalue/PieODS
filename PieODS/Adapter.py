@@ -293,7 +293,7 @@ from typing import Union
 ###########################################
 
 class ProtocolConfigParameters(Config):
-  def __init__(self, location:str=None, encoding:str=None, default_params:KVpairs = None) -> None:
+  def __init__(self, location:str=None, encoding:str="UTF-8", default_params:KVpairs = None) -> None:
       self.location = location
       self.encoding = encoding
       self.default_parameters= default_params
@@ -308,7 +308,7 @@ class ProtocolConfigParameters(Config):
 
 
 class ProtocolConfig(Config):
-  def __init__(self, type:str, protocolConfigParams:ProtocolConfigParameters) -> None:
+  def __init__(self,protocolConfigParams:ProtocolConfigParameters,  type:str="HTTP") -> None:
       self.type = type
       self.parameters = protocolConfigParams
 

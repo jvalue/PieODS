@@ -1,8 +1,11 @@
 import datetime
+from io import BytesIO
 import json
 import requests
 import zipfile
 import os
+
+from requests.models import Response
 
 def _url(r, *path_components):
     for c in path_components:
@@ -81,10 +84,21 @@ def extract_repo_zip(path_to_zip_file=None, directory_to_extract_to=None):
         zip_ref.extractall(directory_to_extract_to)
     return directory_to_extract_to
 
-#can be used for the demo!
+def extract_repo_zip_2(zip_response:Response, directory_to_extract_to=None):
+    with zipfile.ZipFile(BytesIO(zip_response.content), 'r') as zip_ref:
+        zip_ref.extractall(directory_to_extract_to)
+    return directory_to_extract_to
+
+#both works!
 def get_file_from_repo(file_name, repo_owner="jvalue", repo_name="open-data-service", branch="main", folder_name=None):
     return requests.get(_url('https://raw.githubusercontent.com',
                             repo_owner, repo_name, branch,
+                            _url(folder_name, file_name) if folder_name!=None else file_name)
+                        )
+def get_file_from_repo_2(file_name, repo_owner="jvalue", repo_name="open-data-service", branch="main", folder_name=None):
+    #Ex: https://github.com/thepanacealab/covid19_twitter/raw/master/dailies/2020-11-23/2020-11-23_clean-dataset.tsv.gz
+    return requests.get(_url("https://github.com",
+                            repo_owner, repo_name, "raw", branch,
                             _url(folder_name, file_name) if folder_name!=None else file_name)
                         )
 
