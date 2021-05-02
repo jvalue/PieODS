@@ -87,14 +87,16 @@ def extract_repo_zip(path_to_zip_file=None, directory_to_extract_to=None):
 def extract_repo_zip_2(zip_response:Response, directory_to_extract_to=None):
     with zipfile.ZipFile(BytesIO(zip_response.content), 'r') as zip_ref:
         zip_ref.extractall(directory_to_extract_to)
-    return directory_to_extract_to
+        return os.path.join(directory_to_extract_to, zip_ref.namelist()[0]) #assuming gihub sends only the folder inside the zip
+    #return directory_to_extract_to
 
-#both works!
+#both work equally well!
 def get_file_from_repo(file_name, repo_owner="jvalue", repo_name="open-data-service", branch="main", folder_name=None):
     return requests.get(_url('https://raw.githubusercontent.com',
                             repo_owner, repo_name, branch,
                             _url(folder_name, file_name) if folder_name!=None else file_name)
                         )
+
 def get_file_from_repo_2(file_name, repo_owner="jvalue", repo_name="open-data-service", branch="main", folder_name=None):
     #Ex: https://github.com/thepanacealab/covid19_twitter/raw/master/dailies/2020-11-23/2020-11-23_clean-dataset.tsv.gz
     return requests.get(_url("https://github.com",
