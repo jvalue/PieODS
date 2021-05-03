@@ -1,6 +1,9 @@
 import os
 from .helpers import extract_repo_zip_2, get_repo_zip
 import subprocess
+import threading
+from . import Pipeline
+from time import sleep
 
 class ODSclient():
     def __init__(self, clone_parent_path=None, initialized=False) -> None: #path to where the ODS repo should be cloned
@@ -10,7 +13,10 @@ class ODSclient():
         self.github_branch = "main"
         self.repo_clone_parent_dirpath = os.path.dirname(os.path.realpath(__file__)) if clone_parent_path==None else clone_parent_path
         self.repo_clone_path = None
+        self.running = False
 
+    def __run_this(self, comms:list, wd):
+        subprocess.run(comms, cwd=wd, creationflags=subprocess.CREATE_NEW_CONSOLE)
 
     def start(self): #starts the ODS, initializes it if it is hasn't been 
         if not self.initialized:
@@ -21,14 +27,47 @@ class ODSclient():
             except:
                 print("Problem retrieving the ODS original repository!")
             if self.repo_clone_path!=None:
-                subprocess.run(["docker-compose", "up"], cwd=self.repo_clone_path)
+                #subprocess.run(["docker-compose", "up"], cwd=self.repo_clone_path, creationflags=subprocess.CREATE_NEW_CONSOLE)
+                
+                th = threading.Thread(target=self.__run_this, args=[["docker-compose", "up"], self.repo_clone_path], daemon=True)
+                th.start()
                 self.initialized=True
+                # while th.is_alive():
+                #     self.running = True
+                self.running = True
+                #self.initialized=True
+                print("This")
         else:
-            subprocess.run(["docker-compose", "up --no-recreate"], cwd=self.repo_clone_path)
+            #subprocess.run(["docker-compose", "up --no-recreate"], cwd=self.repo_clone_path, creationflags=subprocess.CREATE_NEW_CONSOLE)
+            th = threading.Thread(target=self.__run_this, args=[["docker-compose", "up --no-recreate"], self.repo_clone_path], daemon=True)
+            th.start()
+            # while th.is_alive():
+            #     self.running = True
+            self.running = True
+            print("that")
     def stop(self): #stops the services but does not remove the containers -and session data-
-        subprocess.run(["docker-compose", "stop"], cwd=self.repo_clone_path)
+        if self.repo_clone_path==None and os.path.isdir(os.path.join(self.repo_clone_parent_dirpath, "open-data-service-main")):
+            pl = Pipeline.PipelineAPI()
+            while "alive" not in pl.get_health_status().text:
+                sleep(1)
+            sleep(10)
+            subprocess.run(["docker-compose", "stop"], cwd=os.path.join(self.repo_clone_parent_dirpath, "open-data-service-main"))
+            self.running = False
+        else:
+            pl = Pipeline.PipelineAPI()
+            while "alive" not in pl.get_health_status().text:
+                sleep(1)
+            sleep(10)
+            subprocess.run(["docker-compose", "stop"], cwd=self.repo_clone_path)
+            self.running = False
     def demolish(self): #stops and removes the containers -and session data-
+        pl = Pipeline.PipelineAPI()
+        while "alive" not in pl.get_health_status().text:
+            sleep(1)
+        sleep(10)
         subprocess.run(["docker-compose", "down -v"], cwd=self.repo_clone_path)
+        self.running=False
+
 
     
 # d = ODSclient(path="C:\Work\ODS")      

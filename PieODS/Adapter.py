@@ -381,7 +381,7 @@ class FormatConfig(Config):
   @format_parameters.setter
   def format_parameters(self, new_parameters:Union[dict , CSVparameters]):
     if new_parameters=={} or new_parameters==None:
-      self._format_parameters = new_parameters
+      self._format_parameters = {}
     elif type(new_parameters)==CSVparameters:
       self._format_parameters = new_parameters.get_dict()
     else:
@@ -629,9 +629,9 @@ class DatasourceAPI():
     return requests.get(_url(self.BASE_URL, self.relative_paths["datasources"], DatasourceID, "imports", "latest", "data"))
 
 
-ada = AdapterAPI()
-print(ada.get_supported_protocols().text)
-print(ada.get_supported_data_formats().text)
+# ada = AdapterAPI()
+# print(ada.get_supported_protocols().text)
+# print(ada.get_supported_data_formats().text)
 # protocol_config_params_raw = ProtocolConfigParameters(location='https://www.bka.de/SharedDocs/Downloads/DE/Publikationen/PolizeilicheKriminalstatistik/2018/BKATabellen/FaelleLaenderKreiseStaedte/BKA-LKS-F-03-T01-Kreise_csv.csv?__blob=publicationFile&v=3',
 #                                                                   encoding= 'UTF-8')
 # protocol_config_raw = ProtocolConfig(r'HTTP', protocol_config_params_raw)
