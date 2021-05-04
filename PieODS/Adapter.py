@@ -341,7 +341,7 @@ class ProtocolConfig(Config):
 
 class CSVparameters(Config):
 
-  def __init__(self, col_separtor: str=None , line_separator: str=None, skip_first_data_row: bool=None, first_row_as_header: bool=None) -> None:
+  def __init__(self, col_separtor: str=";" , line_separator: str="\n", skip_first_data_row: bool=False, first_row_as_header: bool=True) -> None:
       self.column_separator = col_separtor
       self.line_separator = line_separator
       self.skip_first_data_row = skip_first_data_row
