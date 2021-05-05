@@ -1,10 +1,13 @@
 #from typing import Literal
 # from PieODS.data_structs import KVpairs
-# import .Adapter
+#from  . import Adapter
 # import .Pipeline
 # import .Notification
 # import .Storage
+# import .helpers
 from . import Adapter, Pipeline, Notification, Storage, helpers
+
+#from . import Adapter#, Pipeline, Notification, Storage, helpers
 
 from typing import Union, Literal
 import json
@@ -17,12 +20,13 @@ _pl = Pipeline.PipelineAPI()
 #_nt = Notification.NotificationAPI()
 #_st = Storage.StorageAPI()
 
+
 class DataSource():
     def __init__(self, protocol_type:str="HTTP",
                 location:str=None,
                 encoding:str="UTF-8", 
                 default_parameters:helpers.KVpairs=None,
-                format_type:Literal["JSON","XML","CSV"]=None,
+                format_type:Literal["JSON","XML","CSV"]="JSON",
                 CSV_col_separtor: str=";" ,
                 CSV_line_separator: str="\n",
                 CSV_skip_first_data_row: bool=False,
@@ -44,7 +48,7 @@ class DataSource():
         self.trigger_config = Adapter.DatasourceTriggerConfig(first_execution, interval, periodic)
 
         self.dynamic = True if default_parameters!=None else False
-
+        self.default_params = default_parameters
         self.meta_data = helpers.Metadata(author, display_name, license, description)
 
         self.id = self.__create()
@@ -57,7 +61,7 @@ class DataSource():
                                                                 trigger_config=self.trigger_config,
                                                                 meta=self.meta_data
                                                                )
-                                      ).content
+                                      )
         return json.loads(created_ds.content)["id"]
 
     def create_pipeline(self, transformation:str=None, display_name:str=None, description:str=None):
@@ -78,10 +82,12 @@ class DataSource():
         if not self.dynamic:
             return  json.loads(_ds.trigger_DataImport_without_params(self.id).content)["id"]
         else:
-            if dynamic_params==[] or dynamic_params==None:
-                return json.loads(_ds.trigger_DataImport_with_params(self.id, Adapter.DataImportParameters(self.protcol_config.parameters.default_parameters)).content)["id"]              
+            print(type(dynamic_params))
+            if dynamic_params==() or dynamic_params==None:
+                f = _ds.trigger_DataImport_with_params(self.id, Adapter.DataImportParameters(*self.default_params.raw_pairs))
+                return json.loads(f.content)["id"]              
             else:
-                return json.loads(_ds.trigger_DataImport_with_params(self.id, Adapter.DataImportParameters(dynamic_params)).content)["id"]
+                return json.loads(_ds.trigger_DataImport_with_params(self.id, Adapter.DataImportParameters(*dynamic_params)).content)["id"]
 
     def get_single_import_data(self, import_id):
         return json.loads(_ds.get_Data_of_Dataimport_of_Datasource(self.id, import_id).content)
@@ -92,11 +98,51 @@ class DataSource():
             data[imp["id"]] = self.get_single_import_data(imp["id"])
         return data
 
-d = DataSource(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/{station}/W/measurements.json?start=P1D",
-              default_parameters={"station": "BAMBERG"},
-              author="test",
-              display_name="Tessst",
-              )
-d.import_outside_pipeline()
+#########Examples##############
+# d = DataSource(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/{station}/W/measurements.json?start=P1D",
+#               default_parameters={"station": "BAMBERG"},
+#               author="test",
+#               display_name="Tessst",
+#               )
+# a = d.import_outside_pipeline()
+# b = d.import_outside_pipeline({"station": "BONN"})
+# c = d.import_outside_pipeline({"station": "BAMBERG"})
+# e = d.get_single_import_data(a)
+# f = d.get_single_import_data(b)
+# g = d.get_single_import_data(c)
+# h = d.get_all_imports_data()
+# print("here")
+
     
-            
+# d = DataSource(location="https://api.covid19api.com/live/country/{country}/status/confirmed/date/{date}",
+#               default_parameters=helpers.KVpairs({"country": "germany"}, {"date":"2021-03-21T13:13:30Z"}),
+#               author="test",
+#               display_name="Tessst",
+#               )
+
+# a = d.import_outside_pipeline()
+# #k = d.create_pipeline(transformation="")
+# b = d.import_outside_pipeline({"country": "united-states"}, {"date":"2020-03-21T13:13:30Z"})
+# #c = d.import_outside_pipeline({"station": "BAMBERG"})
+# e = d.get_single_import_data(a)
+# f = d.get_single_import_data(b)
+# #g = d.get_single_import_data(c)
+# h = d.get_all_imports_data()
+
+
+#https://api.covid19api.com/total/country/south-africa/status/confirmed?from=2020-03-01T00:00:00Z&to=2020-04-01T00:00:00Z
+
+# d = DataSource(location="https://api.covid19api.com/total/country/{country}/status/confirmed?from={startdate}&to={enddate}",
+#               default_parameters=helpers.KVpairs({"country": "germany"},{"startdate": "2021-01-01T00:00:00Z"}, {"enddate":"2021-05-04T00:00:00Z"}),
+#               author="test",
+#               display_name="Tessst",
+#               )
+# a = d.import_outside_pipeline()
+# #k = d.create_pipeline(transformation="")
+# #b = d.import_outside_pipeline({"country": "united-states"}, {"date":"2020-03-21T13:13:30Z"})
+# #c = d.import_outside_pipeline({"station": "BAMBERG"})
+# e = d.get_single_import_data(a)
+# #f = d.get_single_import_data(b)
+# #g = d.get_single_import_data(c)
+# h = d.get_all_imports_data()
+                

@@ -40,6 +40,7 @@ class KVpairs(Config):
     }
     """
     def __init__(self, *pairs) -> None:
+        self.raw_pairs = pairs
         self.kv_pairs = {}
         for p in pairs: #pairs is an iterable containing single-KV dicts
             for k in p:

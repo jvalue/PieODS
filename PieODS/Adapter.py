@@ -401,7 +401,7 @@ class DatasourceTriggerConfig(Config):
       self.periodic = periodic
   def get_dict(self):
     return {
-            "format":self.first_execution,
+            "firstExecution":self.first_execution,
             "interval":self.interval,
             "periodic":self.periodic,
           }
