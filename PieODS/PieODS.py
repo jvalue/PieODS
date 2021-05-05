@@ -1,22 +1,12 @@
-#from typing import Literal
-# from PieODS.data_structs import KVpairs
-#from  . import Adapter
-# import .Pipeline
-# import .Notification
-# import .Storage
-# import .helpers
-from . import Adapter, Pipeline, Notification, Storage, helpers
+from . import Adapter, Pipeline, helpers#, Notification, Storage, 
 
-#from . import Adapter#, Pipeline, Notification, Storage, helpers
-
-from typing import Union, Literal
+from typing import Literal#, Union
 import json
 
 #should be embedded inside local scopes
-#will remove them later
-#_ad = Adapter.AdapterAPI()
-_ds = Adapter.DatasourceAPI()
-_pl = Pipeline.PipelineAPI()
+# _ad = Adapter.AdapterAPI()
+# _ds = Adapter.DatasourceAPI()
+# _pl = Pipeline.PipelineAPI()
 #_nt = Notification.NotificationAPI()
 #_st = Storage.StorageAPI()
 
@@ -54,9 +44,10 @@ class DataSource():
         self.id = self.__create()
 
         self.pipeline_IDs = []
-
+        self._ds = Adapter.DatasourceAPI()
+        self._pl = Pipeline.PipelineAPI()
     def __create(self):
-        created_ds = _ds.create_Datasource(Adapter.DatasourceConfig(protocol_config=self.protcol_config,
+        created_ds = self._ds.create_Datasource(Adapter.DatasourceConfig(protocol_config=self.protcol_config,
                                                                 format_config=self.format_config,
                                                                 trigger_config=self.trigger_config,
                                                                 meta=self.meta_data
@@ -65,7 +56,7 @@ class DataSource():
         return json.loads(created_ds.content)["id"]
 
     def create_pipeline(self, transformation:str=None, display_name:str=None, description:str=None):
-        created_pl = _pl.create_pipeline_config(Pipeline.PipeLineConfigDTO(self.id,
+        created_pl = self._pl.create_pipeline_config(Pipeline.PipeLineConfigDTO(self.id,
                                                                         Pipeline.Transformation("return data;" if transformation==None else transformation),
                                                                         helpers.Metadata(self.meta_data.author,
                                                                                         self.meta_data.display_name+str(len(self.pipeline_IDs)) if display_name==None else display_name,
@@ -80,21 +71,21 @@ class DataSource():
     
     def import_outside_pipeline(self, *dynamic_params):
         if not self.dynamic:
-            return  json.loads(_ds.trigger_DataImport_without_params(self.id).content)["id"]
+            return  json.loads(self._ds.trigger_DataImport_without_params(self.id).content)["id"]
         else:
             print(type(dynamic_params))
             if dynamic_params==() or dynamic_params==None:
-                f = _ds.trigger_DataImport_with_params(self.id, Adapter.DataImportParameters(*self.default_params.raw_pairs))
+                f = self._ds.trigger_DataImport_with_params(self.id, Adapter.DataImportParameters(*self.default_params.raw_pairs))
                 return json.loads(f.content)["id"]              
             else:
-                return json.loads(_ds.trigger_DataImport_with_params(self.id, Adapter.DataImportParameters(*dynamic_params)).content)["id"]
+                return json.loads(self._ds.trigger_DataImport_with_params(self.id, Adapter.DataImportParameters(*dynamic_params)).content)["id"]
 
     def get_single_import_data(self, import_id):
-        return json.loads(_ds.get_Data_of_Dataimport_of_Datasource(self.id, import_id).content)
+        return json.loads(self._ds.get_Data_of_Dataimport_of_Datasource(self.id, import_id).content)
 
     def get_all_imports_data(self):
         data = {}
-        for imp in json.loads(_ds.get_All_Dataimports_of_Datasource(self.id).content):
+        for imp in json.loads(self._ds.get_All_Dataimports_of_Datasource(self.id).content):
             data[imp["id"]] = self.get_single_import_data(imp["id"])
         return data
 
@@ -128,21 +119,3 @@ class DataSource():
 # f = d.get_single_import_data(b)
 # #g = d.get_single_import_data(c)
 # h = d.get_all_imports_data()
-
-
-#https://api.covid19api.com/total/country/south-africa/status/confirmed?from=2020-03-01T00:00:00Z&to=2020-04-01T00:00:00Z
-
-# d = DataSource(location="https://api.covid19api.com/total/country/{country}/status/confirmed?from={startdate}&to={enddate}",
-#               default_parameters=helpers.KVpairs({"country": "germany"},{"startdate": "2021-01-01T00:00:00Z"}, {"enddate":"2021-05-04T00:00:00Z"}),
-#               author="test",
-#               display_name="Tessst",
-#               )
-# a = d.import_outside_pipeline()
-# #k = d.create_pipeline(transformation="")
-# #b = d.import_outside_pipeline({"country": "united-states"}, {"date":"2020-03-21T13:13:30Z"})
-# #c = d.import_outside_pipeline({"station": "BAMBERG"})
-# e = d.get_single_import_data(a)
-# #f = d.get_single_import_data(b)
-# #g = d.get_single_import_data(c)
-# h = d.get_all_imports_data()
-                
