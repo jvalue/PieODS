@@ -1,3 +1,4 @@
+from requests.models import Response
 from . import Adapter, Pipeline, helpers#, Notification, Storage, 
 
 from typing import Literal#, Union
@@ -41,19 +42,37 @@ class DataSource():
         self.default_params = default_parameters
         self.meta_data = helpers.Metadata(author, display_name, license, description)
 
-        self.id = self.__create()
+        self.id = None
 
         self.pipeline_IDs = []
         self._ds = Adapter.DatasourceAPI()
         self._pl = Pipeline.PipelineAPI()
-    def __create(self):
-        created_ds = self._ds.create_Datasource(Adapter.DatasourceConfig(protocol_config=self.protcol_config,
-                                                                format_config=self.format_config,
-                                                                trigger_config=self.trigger_config,
-                                                                meta=self.meta_data
-                                                               )
-                                      )
-        return json.loads(created_ds.content)["id"]
+
+    def check_duplicate(self):
+        duplicate = False
+        datasources = self._ds.get_all_DatasourceConfigs().content
+        for datasource_config in json.loads(datasources):
+            own_meta_data =self.meta_data.get_dict()
+            if (datasource_config["metadata"]["author"]== own_meta_data["author"] and
+                datasource_config["metadata"]["displayName"]== own_meta_data["displayName"] ) :
+                duplicate=True
+                return datasource_config["id"]
+        return False
+
+    def create(self):
+        check = self.check_duplicate()
+        if not check:
+            created_ds = self._ds.create_Datasource(Adapter.DatasourceConfig(protocol_config=self.protcol_config,
+                                                                    format_config=self.format_config,
+                                                                    trigger_config=self.trigger_config,
+                                                                    meta=self.meta_data
+                                                                )
+                                        )
+            id= json.loads(created_ds.content)["id"]
+        else:
+            id=check
+        self.id = id
+        return id
 
     def create_pipeline(self, transformation:str=None, display_name:str=None, description:str=None):
         created_pl = self._pl.create_pipeline_config(Pipeline.PipeLineConfigDTO(self.id,
@@ -73,15 +92,25 @@ class DataSource():
         if not self.dynamic:
             return  json.loads(self._ds.trigger_DataImport_without_params(self.id).content)["id"]
         else:
-            print(type(dynamic_params))
             if dynamic_params==() or dynamic_params==None:
                 f = self._ds.trigger_DataImport_with_params(self.id, Adapter.DataImportParameters(*self.default_params.raw_pairs))
                 return json.loads(f.content)["id"]              
             else:
-                return json.loads(self._ds.trigger_DataImport_with_params(self.id, Adapter.DataImportParameters(*dynamic_params)).content)["id"]
+                #return json.loads(self._ds.trigger_DataImport_with_params(self.id, Adapter.DataImportParameters(*dynamic_params)).content)["id"]
+                return json.loads(self._ds.trigger_DataImport_with_params(self.id, self.validate_params(*dynamic_params)).content)["id"]
 
-    def get_single_import_data(self, import_id):
-        return json.loads(self._ds.get_Data_of_Dataimport_of_Datasource(self.id, import_id).content)
+    def validate_params(self, *input_params):
+        validated = [*input_params]
+        input_params_keys = [key for pair in input_params for key in pair]
+        defaults = self.default_params.get_dict()
+        for key in defaults:
+            if key not in input_params_keys:
+                validated.append({key:defaults[key]})
+        return Adapter.DataImportParameters(*validated)
+        
+                
+    def get_single_import_data(self, import_id) -> Response:
+        return self._ds.get_Data_of_Dataimport_of_Datasource(self.id, import_id).content
 
     def get_all_imports_data(self):
         data = {}

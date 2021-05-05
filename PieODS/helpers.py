@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta, date
 from io import BytesIO
 import json
 import requests
@@ -12,8 +12,6 @@ def _url(r, *path_components):
         r += "/{}".format(str(c)) 
     return r
 
-def get_current_timestamp():
-    return datetime.datetime.now(tz =  datetime.datetime.now().astimezone().tzinfo).isoformat(timespec='milliseconds')
 
 class Unsupported_by_ODS(Exception):
     pass
@@ -114,3 +112,15 @@ def write_file_from_repo(repo_file, file_name, destination_dir=None):
     with open(final_path, 'wb') as f:
         f.write(repo_file.content)
     return final_path
+
+def yield_days_between(start_date, end_date):
+    for n in range(int((end_date - start_date).days)):
+        yield start_date + timedelta(n)
+
+def get_current_timestamp():
+    return datetime.now(tz =  datetime.now().astimezone().tzinfo).isoformat(timespec='milliseconds')
+    
+def list_days_between(start_date:date=date(2021, 1, 1), end_date:date=date(2021, 5, 5)):
+    # for single_date in yield_days_between(start_date, end_date):
+    #     print(single_date.strftime("%Y-%m-%d"))
+    return [d for d in yield_days_between(start_date, end_date)]
