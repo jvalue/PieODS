@@ -1,7 +1,7 @@
 from requests.models import Response
 from . import Adapter, Pipeline, helpers#, Notification, Storage, 
 
-from typing import Literal#, Union
+from typing import Literal, Union
 import json
 
 #should be embedded inside local scopes
@@ -48,18 +48,18 @@ class DataSource():
         self._ds = Adapter.DatasourceAPI()
         self._pl = Pipeline.PipelineAPI()
 
-    def check_duplicate(self):
-        duplicate = False
+    def check_duplicate(self) -> Union[int, bool]:
+        #duplicate = False
         datasources = self._ds.get_all_DatasourceConfigs().content
         for datasource_config in json.loads(datasources):
             own_meta_data =self.meta_data.get_dict()
             if (datasource_config["metadata"]["author"]== own_meta_data["author"] and
                 datasource_config["metadata"]["displayName"]== own_meta_data["displayName"] ) :
-                duplicate=True
+                #duplicate=True
                 return datasource_config["id"]
         return False
 
-    def create(self):
+    def create(self)->int:
         check = self.check_duplicate()
         if not check:
             created_ds = self._ds.create_Datasource(Adapter.DatasourceConfig(protocol_config=self.protcol_config,
@@ -74,7 +74,7 @@ class DataSource():
         self.id = id
         return id
 
-    def create_pipeline(self, transformation:str=None, display_name:str=None, description:str=None):
+    def create_pipeline(self, transformation:str=None, display_name:str=None, description:str=None)-> int:
         created_pl = self._pl.create_pipeline_config(Pipeline.PipeLineConfigDTO(self.id,
                                                                         Pipeline.Transformation("return data;" if transformation==None else transformation),
                                                                         helpers.Metadata(self.meta_data.author,
@@ -88,7 +88,7 @@ class DataSource():
         self.pipeline_IDs.append(pl_id)
         return pl_id
     
-    def import_outside_pipeline(self, *dynamic_params):
+    def import_outside_pipeline(self, *dynamic_params) -> int:
         if not self.dynamic:
             return  json.loads(self._ds.trigger_DataImport_without_params(self.id).content)["id"]
         else:
@@ -99,7 +99,7 @@ class DataSource():
                 #return json.loads(self._ds.trigger_DataImport_with_params(self.id, Adapter.DataImportParameters(*dynamic_params)).content)["id"]
                 return json.loads(self._ds.trigger_DataImport_with_params(self.id, self.validate_params(*dynamic_params)).content)["id"]
 
-    def validate_params(self, *input_params):
+    def validate_params(self, *input_params) -> Adapter.DataImportParameters:
         validated = [*input_params]
         input_params_keys = [key for pair in input_params for key in pair]
         defaults = self.default_params.get_dict()
@@ -112,11 +112,15 @@ class DataSource():
     def get_single_import_data(self, import_id) -> Response:
         return self._ds.get_Data_of_Dataimport_of_Datasource(self.id, import_id).content
 
-    def get_all_imports_data(self):
+    def get_all_imports_data(self)-> dict:
         data = {}
         for imp in json.loads(self._ds.get_All_Dataimports_of_Datasource(self.id).content):
             data[imp["id"]] = self.get_single_import_data(imp["id"])
         return data
+    
+    def self_destroy(self):
+        if self.id!=None:
+            self._ds.delete_Datasource(self.id)
 
 #########Examples##############
 # d = DataSource(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/{station}/W/measurements.json?start=P1D",

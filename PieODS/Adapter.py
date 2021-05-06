@@ -656,7 +656,7 @@ supported_protocols = ada.get_supported_protocols()
 supported_data_formats = ada.get_supported_data_formats()
 #print(supported_data_formats.text)
 
-### Perform Data Import RAW
+### Perform Data Import RAW                                     https://www.bka.de/SharedDocs/Downloads/DE/Publikationen/PolizeilicheKriminalstatistik/2020/Bund/Faelle/BU-F-01-T01-Faelle_csv.csv?__blob=publicationFile&v=4
 protocol_config_params_raw = ProtocolConfigParameters(location='https://www.bka.de/SharedDocs/Downloads/DE/Publikationen/PolizeilicheKriminalstatistik/2018/BKATabellen/FaelleLaenderKreiseStaedte/BKA-LKS-F-03-T01-Kreise_csv.csv?__blob=publicationFile&v=3',
                                                                   encoding= 'UTF-8')
 protocol_config_raw = ProtocolConfig(r'HTTP', protocol_config_params_raw)

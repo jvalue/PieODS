@@ -119,8 +119,9 @@ def yield_days_between(start_date, end_date):
 
 def get_current_timestamp():
     return datetime.now(tz =  datetime.now().astimezone().tzinfo).isoformat(timespec='milliseconds')
-    
+
 def list_days_between(start_date:date=date(2021, 1, 1), end_date:date=date(2021, 5, 5)):
     # for single_date in yield_days_between(start_date, end_date):
     #     print(single_date.strftime("%Y-%m-%d"))
     return [d for d in yield_days_between(start_date, end_date)]
+
