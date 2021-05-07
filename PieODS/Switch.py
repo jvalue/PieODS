@@ -18,7 +18,7 @@ class ODSclient():
     def __run_this(self, comms:list, wd):
         subprocess.run(comms, cwd=wd, creationflags=subprocess.CREATE_NEW_CONSOLE)
 
-    def __wait_for_start():
+    def __wait_for_start(self):
         sleep(10)
         pl = Pipeline.PipelineAPI()
         while "alive" not in pl.get_health_status().text:
