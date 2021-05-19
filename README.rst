@@ -6,8 +6,8 @@ PieODS
 .. image:: https://img.shields.io/pypi/v/PieODS.svg
         :target: https://pypi.org/project/PieODS
 
-.. image:: https://readthedocs.io/projects/PieODS/badge/?version=stable&style=plastic
-        :target: https://PieODS.readthedocs.io/en/stable/?badge=latest
+.. image:: https://readthedocs.io/projects/PieODS/badge/?version=stable
+        :target: https://PieODS.readthedocs.io/en/stable/?badge=stable
         :alt: Documentation Status
 
 
