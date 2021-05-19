@@ -7,8 +7,8 @@ import click
 
 @click.command()
 @click.option("--service",
-            type=click.Choice(['start', 'stop'], case_sensitive=False),
-            help="To start a PieODS instance: 'PieODS --service start'\nTo stop a PieODS instance: 'PieODS --service stop'")
+            type=click.Choice(['start', 'stop', 'demolish'], case_sensitive=False),
+            help="To start a PieODS instance: 'PieODS --service start'\nTo stop a PieODS instance: 'PieODS --service stop'\nTo demolis a PieODS instance: 'PieODS --service demolish'")
 def main(service=None):
     """Console entry point for PieODS (Python interface to Jvalue ODS)."""
     client = Switch.ODSclient()
@@ -16,6 +16,8 @@ def main(service=None):
         client.stop()
     elif service=='start':
         client.start()
+    elif service=='demolish':
+        client.demolish()
     else:
         ctx = click.get_current_context()
         click.echo(ctx.get_help())

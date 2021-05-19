@@ -146,7 +146,7 @@ class FirebaseNotificationParameter(Config):
               }
 
 class NotificationWriteModel(Config):
-    def __init__(self, pipelineId:int, condition:str,
+    def __init__(self, pipelineId:int, condition:bool,
                 type:Literal["WEBHOOK", "SLACK" , "FCM"],
                 parameter:Union[SlackNotificationParameter, FirebaseNotificationParameter, WebhookNotificationParameter] ) -> None:
         self.pipeline_ID = int(pipelineId)

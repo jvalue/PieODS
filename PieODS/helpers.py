@@ -55,11 +55,11 @@ class Metadata(Config):
     self.creation_timestamp = timestamp #Date (format: yyyy-MM-dd'T'HH:mm:ss.SSSXXX)
   def get_dict(self):#create dict of non-empty only
     to_be_returned= {
-      "author": self.author,
-      "displayName": self.display_name,
-      "license": self.license,
+      "author": self.author if self.author!=None else "none",
+      "displayName": self.display_name if self.display_name!=None else "display_name",
+      "license": self.license if self.license!=None else "none",
       "description": self.description if self.description!=None else "none", #Important: the API rejects Metadata structs with missing description.
-      "creationTimestamp": self.creation_timestamp
+      "creationTimestamp": self.creation_timestamp if self.creation_timestamp!=None else None
       }
     return {k: v for k, v in to_be_returned.items() if v is not None}
 
@@ -76,7 +76,6 @@ def write_repo_zip(repo_zip, repo_name="open-data-service", destination_dir=None
     with open(final_path, 'wb') as f:
         f.write(repo_zip.content)
     return final_path
-
 
 def extract_repo_zip(path_to_zip_file=None, directory_to_extract_to=None):
     with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
@@ -120,8 +119,9 @@ def yield_days_between(start_date, end_date):
 def get_current_timestamp():
     return datetime.now(tz =  datetime.now().astimezone().tzinfo).isoformat(timespec='milliseconds')
 
-def list_days_between(start_date:date=date(2021, 1, 1), end_date:date=date(2021, 5, 5)):
+def list_days_between(start_date:date=date(2021, 1, 1), end_date:date=date.today()):
     # for single_date in yield_days_between(start_date, end_date):
     #     print(single_date.strftime("%Y-%m-%d"))
-    return [d for d in yield_days_between(start_date, end_date)]
+    return [d.strftime("%Y-%m-%d") for d in yield_days_between(start_date, end_date)]
 
+#print(list_days_between(end_date=date.today()))

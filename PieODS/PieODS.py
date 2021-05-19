@@ -1,5 +1,5 @@
 from requests.models import Response
-from . import Adapter, Pipeline, helpers#, Notification, Storage, 
+from . import Adapter, Pipeline, helpers, Storage#, Notification
 
 from typing import Literal, Union
 import json
@@ -47,20 +47,28 @@ class DataSource():
         self.pipeline_IDs = []
         self._ds = Adapter.DatasourceAPI()
         self._pl = Pipeline.PipelineAPI()
+        self._st =Storage.StorageAPI()
+        #return True
 
-    def check_duplicate(self) -> Union[int, bool]:
+    def check_duplicate_datasource(self) -> Union[int, bool]:
         #duplicate = False
-        datasources = self._ds.get_all_DatasourceConfigs().content
-        for datasource_config in json.loads(datasources):
-            own_meta_data =self.meta_data.get_dict()
-            if (datasource_config["metadata"]["author"]== own_meta_data["author"] and
-                datasource_config["metadata"]["displayName"]== own_meta_data["displayName"] ) :
-                #duplicate=True
-                return datasource_config["id"]
-        return False
+        fetched_datasources_response = self._ds.get_all_DatasourceConfigs()    
+        if fetched_datasources_response.status_code<300:
+            try:
+                #datasources = fetched_datasources_response.content
+                for datasource_config in json.loads(fetched_datasources_response.content): #need to check behavior when there are no prior datasources
+                    own_meta_data =self.meta_data.get_dict()
+                    if (datasource_config["metadata"]["author"]== own_meta_data["author"] and
+                        datasource_config["metadata"]["displayName"]== own_meta_data["displayName"] ) :
+                        #duplicate=True
+                        return datasource_config["id"]
+            except:
+                return False
+        else:
+            return False
 
     def create(self)->int:
-        check = self.check_duplicate()
+        check = self.check_duplicate_datasource()
         if not check:
             created_ds = self._ds.create_Datasource(Adapter.DatasourceConfig(protocol_config=self.protcol_config,
                                                                     format_config=self.format_config,
@@ -68,25 +76,83 @@ class DataSource():
                                                                     meta=self.meta_data
                                                                 )
                                         )
-            id= json.loads(created_ds.content)["id"]
+            if created_ds.status_code<300:                            
+                id= json.loads(created_ds.content)["id"]
+            else:
+                return False
         else:
             id=check
         self.id = id
         return id
 
-    def create_pipeline(self, transformation:str=None, display_name:str=None, description:str=None)-> int:
-        created_pl = self._pl.create_pipeline_config(Pipeline.PipeLineConfigDTO(self.id,
-                                                                        Pipeline.Transformation("return data;" if transformation==None else transformation),
-                                                                        helpers.Metadata(self.meta_data.author,
-                                                                                        self.meta_data.display_name+str(len(self.pipeline_IDs)) if display_name==None else display_name,
-                                                                                        self.meta_data.license,
-                                                                                        description
-                                                                                        )
-                                                                        )
-                                              )
-        pl_id = json.loads(created_pl.content)["id"]
-        self.pipeline_IDs.append(pl_id)
+    def check_duplicate_pipeline(self, pl_config:Pipeline.PipeLineConfigDTO):
+        fetched_pipelines_response = self._pl.get_all_pipeline_configs()  
+        if fetched_pipelines_response.status_code<300:
+            try:
+                #pipelines = fetched_pipelines_response.content
+                for pipeline_config in json.loads(fetched_pipelines_response.content): #need to check behavior when there are no prior datasources
+                    #if pipeline_config["id"]==41:
+                    # print(pl_config.data_source_ID)
+                    # print(pipeline_config["datasourceId"])
+                    # print(pipeline_config["transformation"]["func"])
+                    # print(pl_config.transformation)
+                    #own_meta_data = pl_config.meta_data.get_dict()
+                    # if (pipeline_config["metadata"]["author"]== own_meta_data["author"] and
+                    #     pipeline_config["metadata"]["displayName"]== own_meta_data["displayName"] and
+                    #     pipeline_config["datasourceId"]==pl_config.data_source_ID and
+                    #     pipeline_config["transformation"]["func"]==pl_config.transformation.getdict()["func"]) :
+                    if (pipeline_config["datasourceId"]==pl_config.data_source_ID and
+                        pipeline_config["transformation"]["func"]==pl_config.transformation.get_dict()["func"]) :
+                        #print("found {}".format(pipeline_config["id"]))
+                        return pipeline_config["id"]
+            except:
+                return False
+        else:
+            return False
+
+    def create_pipeline(self, transformation:str=None, author:str=None, display_name:str=None, description:str=None, license:str=None)-> int:
+        pl_config = Pipeline.PipeLineConfigDTO(self.id,
+                                                Pipeline.Transformation("return data;" if transformation==None else transformation),
+                                                helpers.Metadata(author = self.meta_data.author if author==None else author,
+                                                                display_name = self.meta_data.display_name+str(len(self.pipeline_IDs)) if display_name==None else display_name,
+                                                                license = self.meta_data.license if license==None else license,
+                                                                description = self.meta_data.description if description==None else description
+                                                                )
+                                                )
+        check = self.check_duplicate_pipeline(pl_config)
+        # created_pl = self._pl.create_pipeline_config(pl_config)
+        # if created_pl.status_code < 300:
+        #     pl_id = json.loads(created_pl.content)["id"]
+        #     self.pipeline_IDs.append(pl_id)
+        #     return pl_id
+        # else:
+        #     return False
+
+        if not check:
+            created_pl = self._pl.create_pipeline_config(pl_config)
+            if created_pl.status_code<300:                            
+                pl_id = json.loads(created_pl.content)["id"]
+                self.pipeline_IDs.append(pl_id)
+                return pl_id
+            else:
+                return False
+        else:
+            pl_id=check
+            if pl_id not in self.pipeline_IDs:
+                self.pipeline_IDs.append(pl_id)
         return pl_id
+
+    def delete_pipeline(self, pipeline_id):
+        if self._pl.delete_pipeline_config_by_ID(pipeline_id).status_code < 400:
+            return True
+        else:
+            return False
+
+    def delete_all_attributed_pipelines(self):
+        if all([self.delete_pipeline(i) for i in self.pipeline_IDs]):
+            return True
+        else:
+            return False
     
     def import_outside_pipeline(self, *dynamic_params) -> int:
         if not self.dynamic:
@@ -118,9 +184,28 @@ class DataSource():
             data[imp["id"]] = self.get_single_import_data(imp["id"])
         return data
     
+    def get_data_of_latest_data_import(self):
+        return self._ds.get_Data_of_latest_Dataimport_of_Datasource(self.id).content
+
+    def get_single_pipeline_output(self, pl_id):
+        try:
+            return json.loads(self._st.get_pipeline_data(pl_id).content)
+        except:
+            return {}
+    def get_latest_single_pipeline_output(self, pl_id):
+
+        try:
+            data =  json.loads(self._st.get_pipeline_data(pl_id).content)[-1]["data"]
+            return data
+        except:
+            return {}
+
     def self_destroy(self):
         if self.id!=None:
             self._ds.delete_Datasource(self.id)
+            return True
+        else:
+            return False
 
 #########Examples##############
 # d = DataSource(location="https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/{station}/W/measurements.json?start=P1D",

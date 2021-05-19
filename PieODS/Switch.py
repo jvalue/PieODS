@@ -6,14 +6,16 @@ from . import Pipeline
 from time import sleep
 
 class ODSclient():
-    def __init__(self, clone_parent_path=None, initialized=False) -> None: #path to where the ODS repo should be cloned
-        self.initialized =  initialized
+    def __init__(self, clone_parent_path=None, got_repo=None) -> None: #path to where the ODS repo should be cloned
         self.github_repo_name = "open-data-service"
         self.github_repo_owner = "jvalue"
         self.github_branch = "main"
         self.repo_clone_parent_dirpath = os.path.dirname(os.path.realpath(__file__)) if clone_parent_path==None else clone_parent_path
-        self.repo_clone_path = None
+        self.expected_repo_clone_path = os.path.join(self.repo_clone_parent_dirpath, "open-data-service-main")
+        
         self.running = False
+        self.got_repo =  os.path.isdir(self.expected_repo_clone_path) if got_repo==None else got_repo
+        self.repo_clone_path = None if not self.got_repo  else self.expected_repo_clone_path
 
     def __run_this(self, comms:list, wd):
         subprocess.run(comms, cwd=wd, creationflags=subprocess.CREATE_NEW_CONSOLE)
@@ -27,7 +29,7 @@ class ODSclient():
         return 0
 
     def start(self): #starts the ODS, initializes it if it is hasn't been 
-        if not self.initialized:
+        if not self.got_repo:
             try:
                 repo_response = get_repo_zip(repo_name=self.github_repo_name, repo_owner=self.github_repo_owner, branch=self.github_branch)
                 if repo_response.status_code < 400:
@@ -37,18 +39,18 @@ class ODSclient():
             if self.repo_clone_path!=None:                
                 th = threading.Thread(target=self.__run_this, args=[["docker-compose", "up"], self.repo_clone_path], daemon=True)
                 th.start()
-                self.initialized=True
+                self.got_repo=True
                 self.running = True
                 self.__wait_for_start()
         else:
             #subprocess.run(["docker-compose", "up --no-recreate"], cwd=self.repo_clone_path, creationflags=subprocess.CREATE_NEW_CONSOLE)
-            th = threading.Thread(target=self.__run_this, args=[["docker-compose", "up --no-recreate"], self.repo_clone_path], daemon=True)
+            th = threading.Thread(target=self.__run_this, args=[["docker-compose", "up"], self.repo_clone_path], daemon=True)
             th.start()
             self.__wait_for_start()
             # while th.is_alive():
             #     self.running = True
             self.running = True
-            print("that")
+            #print("that")
 
     def stop(self): #stops the services but does not remove the containers -and session data-
         if self.repo_clone_path==None and os.path.isdir(os.path.join(self.repo_clone_parent_dirpath, "open-data-service-main")):
@@ -62,7 +64,8 @@ class ODSclient():
 
     def demolish(self): #stops and removes the containers -and session data-
         sleep(5)
-        subprocess.run(["docker-compose", "down -v"], cwd=self.repo_clone_path)
+        #print(self.repo_clone_path)
+        subprocess.run(["docker-compose", "down", "-v"], cwd=self.repo_clone_path)
         self.running=False
 
 
