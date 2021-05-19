@@ -17,7 +17,7 @@ Python interface to the Open Data Service API
 
 
 * Free software: MIT license
-* Documentation: https://PieODS.readthedocs.io.
+* Documentation: https://pieods.readthedocs.io/en/stable/.
 * Releases: https://pypi.org/project/PieODS.
 
 
