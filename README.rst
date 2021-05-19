@@ -7,7 +7,7 @@ PieODS
         :target: https://pypi.org/project/PieODS
 
 .. image:: https://readthedocs.org/projects/PieODS/badge/?version=latest
-        :target: https://PieODS.readthedocs.io/en/stable/?badge=stable
+        :target: https://PieODS.readthedocs.io/en/stable/?badge=latest
         :alt: Documentation Status
 
 
