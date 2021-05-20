@@ -32,13 +32,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/Shady-Hegazy/PieODS
+    $ git clone git://github.com/jvalue/PieODS
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl -OJL https://github.com/Shady-Hegazy/PieODS/tarball/master
+    $ curl -OJL https://github.com/jvalue/PieODS/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -47,5 +47,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/Shady-Hegazy/PieODS
-.. _tarball: https://github.com/Shady-Hegazy/PieODS/tarball/master
+.. _Github repo: https://github.com/jvalue/PieODS
+.. _tarball: https://github.com/jvalue/PieODS/tarball/master
